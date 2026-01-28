@@ -6,6 +6,3 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(core)
 add_subdirectory(python)
-
-add_executable(test_ballistics test.cpp)
-target_link_libraries(test_ballistics PRIVATE ballisticsolver_core)
