@@ -1,10 +1,10 @@
-#ifndef BALLISTICSOLVER_TRAJECTORY_HPP
-#define BALLISTICSOLVER_TRAJECTORY_HPP
+#ifndef BALLISTIC_SOLVE_TRAJECTORY_HPP
+#define BALLISTIC_SOLVE_TRAJECTORY_HPP
 
 #include <Eigen/Dense>
 #include <vector>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Container for a computed ballistic trajectory.
@@ -48,4 +48,4 @@ namespace ballisticsolver
     };
 }
 
-#endif // BALLISTICSOLVER_TRAJECTORY_HPP
+#endif // BALLISTIC_SOLVE_TRAJECTORY_HPP

@@ -1,11 +1,11 @@
-#ifndef BALLISTICSOLVER_TOOLS_H
-#define BALLISTICSOLVER_TOOLS_H
+#ifndef BALLISTIC_SOLVE_TOOLS_H
+#define BALLISTIC_SOLVE_TOOLS_H
 
 #include <Eigen/Dense>
 #include <numbers>
 #include <functional>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Find a bracketing interval containing a root using TOMS748 algorithm.
@@ -74,4 +74,4 @@ namespace ballisticsolver
         std::uintmax_t max_iter = 16);
 }
 
-#endif // BALLISTICSOLVER_TOOLS_H
+#endif // BALLISTIC_SOLVE_TOOLS_H

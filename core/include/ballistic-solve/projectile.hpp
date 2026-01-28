@@ -1,7 +1,7 @@
-#ifndef BALLISTICSOLVER_PROJECTILE_HPP
-#define BALLISTICSOLVER_PROJECTILE_HPP
+#ifndef BALLISTIC_SOLVE_PROJECTILE_HPP
+#define BALLISTIC_SOLVE_PROJECTILE_HPP
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Physical properties of a projectile for ballistic simulation.
@@ -38,4 +38,4 @@ namespace ballisticsolver
     };
 }
 
-#endif // BALLISTICSOLVER_PROJECTILE_HPP
+#endif // BALLISTIC_SOLVE_PROJECTILE_HPP

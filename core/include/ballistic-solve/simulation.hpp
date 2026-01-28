@@ -1,15 +1,15 @@
-#ifndef BALLISTICSOLVER_SIMULATION_HPP
-#define BALLISTICSOLVER_SIMULATION_HPP
+#ifndef BALLISTIC_SOLVE_SIMULATION_HPP
+#define BALLISTIC_SOLVE_SIMULATION_HPP
 
-#include "ballisticsolver/environment.hpp"
-#include "ballisticsolver/projectile.hpp"
-#include "ballisticsolver/trajectory.hpp"
-#include "ballisticsolver/platform.hpp"
+#include "ballistic-solve/environment.hpp"
+#include "ballistic-solve/projectile.hpp"
+#include "ballistic-solve/trajectory.hpp"
+#include "ballistic-solve/platform.hpp"
 
 #include <Eigen/Dense>
 #include <utility>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Configuration for the adaptive ODE integrator.
@@ -129,4 +129,4 @@ namespace ballisticsolver
         const IntegrationOptions &integration_options = IntegrationOptions{});
 }
 
-#endif // BALLISTICSOLVER_SIMULATION_HPP
+#endif // BALLISTIC_SOLVE_SIMULATION_HPP

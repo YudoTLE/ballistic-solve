@@ -1,6 +1,6 @@
-#include "ballisticsolver/projectile.hpp"
+#include "ballistic-solve/projectile.hpp"
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
   Projectile::Projectile(
       const double mass,

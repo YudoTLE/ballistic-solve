@@ -1,9 +1,9 @@
-#ifndef BALLISTICSOLVER_PLATFORM_HPP
-#define BALLISTICSOLVER_PLATFORM_HPP
+#ifndef BALLISTIC_SOLVE_PLATFORM_HPP
+#define BALLISTIC_SOLVE_PLATFORM_HPP
 
 #include <Eigen/Dense>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Launch platform properties for ballistic simulation.
@@ -40,4 +40,4 @@ namespace ballisticsolver
     };
 }
 
-#endif // BALLISTICSOLVER_PLATFORM_HPP
+#endif // BALLISTIC_SOLVE_PLATFORM_HPP

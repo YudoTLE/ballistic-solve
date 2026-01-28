@@ -1,11 +1,11 @@
-#ifndef BALLISTICSOLVER_ENVIRONMENT_HPP
-#define BALLISTICSOLVER_ENVIRONMENT_HPP
+#ifndef BALLISTIC_SOLVE_ENVIRONMENT_HPP
+#define BALLISTIC_SOLVE_ENVIRONMENT_HPP
 
 #include <functional>
 #include <optional>
 #include <Eigen/Dense>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Environmental conditions for ballistic simulation.
@@ -121,4 +121,4 @@ namespace ballisticsolver
     };
 }
 
-#endif // BALLISTICSOLVER_ENVIRONMENT_HPP
+#endif // BALLISTIC_SOLVE_ENVIRONMENT_HPP

@@ -1,10 +1,10 @@
-#include "ballisticsolver/simulation.hpp"
+#include "ballistic-solve/simulation.hpp"
 
 #include <boost/numeric/odeint.hpp>
 
 using StateType = Eigen::Matrix<double, 6, 1>;
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     Eigen::Vector3d to_direction(const std::pair<double, double> &angles)
     {

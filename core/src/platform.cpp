@@ -1,6 +1,6 @@
-#include "ballisticsolver/platform.hpp"
+#include "ballistic-solve/platform.hpp"
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     Platform::Platform(
         const Eigen::Vector3d &position,

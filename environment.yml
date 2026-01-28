@@ -1,4 +1,4 @@
-name: ballisticsolver
+name: ballistic-solve
 channels:
 - conda-forge
 dependencies:
@@ -9,3 +9,4 @@ dependencies:
 - boost=1.84
 - eigen=3.4
 - nanobind=2.10
+- pip

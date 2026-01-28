@@ -5,16 +5,16 @@
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 
-#include "ballisticsolver/environment.hpp"
-#include "ballisticsolver/platform.hpp"
-#include "ballisticsolver/projectile.hpp"
-#include "ballisticsolver/simulation.hpp"
-#include "ballisticsolver/trajectory.hpp"
-#include "ballisticsolver/targeting.hpp"
-#include "ballisticsolver/tools.hpp"
+#include "ballistic-solve/environment.hpp"
+#include "ballistic-solve/platform.hpp"
+#include "ballistic-solve/projectile.hpp"
+#include "ballistic-solve/simulation.hpp"
+#include "ballistic-solve/trajectory.hpp"
+#include "ballistic-solve/targeting.hpp"
+#include "ballistic-solve/tools.hpp"
 
 namespace nb = nanobind;
-namespace bs = ballisticsolver;
+namespace bs = ballistic_solve;
 
 NB_MODULE(_core, m)
 {

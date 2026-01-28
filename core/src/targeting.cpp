@@ -1,11 +1,11 @@
-#include "ballisticsolver/targeting.hpp"
+#include "ballistic-solve/targeting.hpp"
 
-#include "ballisticsolver/simulation.hpp"
-#include "ballisticsolver/tools.hpp"
+#include "ballistic-solve/simulation.hpp"
+#include "ballistic-solve/tools.hpp"
 #include <numbers>
 #include <optional>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     double find_best_azimuth_angle(
         const Environment &environment,

@@ -1,9 +1,9 @@
-#include "ballisticsolver/environment.hpp"
+#include "ballistic-solve/environment.hpp"
 
 #include <cmath>
 #include <random>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     Environment::Environment(
         const Eigen::Vector3d &gravity,

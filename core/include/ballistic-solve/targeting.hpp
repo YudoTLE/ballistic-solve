@@ -1,9 +1,9 @@
-#ifndef BALLISTICSOLVER_TARGETING_HPP
-#define BALLISTICSOLVER_TARGETING_HPP
+#ifndef BALLISTIC_SOLVE_TARGETING_HPP
+#define BALLISTIC_SOLVE_TARGETING_HPP
 
-#include "ballisticsolver/environment.hpp"
-#include "ballisticsolver/projectile.hpp"
-#include "ballisticsolver/simulation.hpp"
+#include "ballistic-solve/environment.hpp"
+#include "ballistic-solve/projectile.hpp"
+#include "ballistic-solve/simulation.hpp"
 
 #include <Eigen/Dense>
 #include <functional>
@@ -11,7 +11,7 @@
 #include <utility>
 #include <cstdint>
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     /**
      * @brief Complete targeting solution for engaging a target.
@@ -252,4 +252,4 @@ namespace ballisticsolver
         const TargetingOptions &targeting_options = TargetingOptions{});
 }
 
-#endif // BALLISTICSOLVER_TARGETING_HPP
+#endif // BALLISTIC_SOLVE_TARGETING_HPP

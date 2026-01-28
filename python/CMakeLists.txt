@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.2)
 
-project(ballisticsolver_python LANGUAGES CXX)
+project(ballistic_solve_python LANGUAGES CXX)
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 
@@ -23,11 +23,11 @@ nanobind_add_module(_core
 
 target_link_libraries(_core
     PRIVATE
-        ballisticsolver_core
+        ballistic_solve_core
 )
 
 install(TARGETS _core
-  LIBRARY DESTINATION ballisticsolver
+  LIBRARY DESTINATION ballistic_solve
 )
 
 nanobind_add_stub(
@@ -39,5 +39,5 @@ nanobind_add_stub(
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_core.pyi
-    DESTINATION ballisticsolver
+    DESTINATION ballistic_solve
 )

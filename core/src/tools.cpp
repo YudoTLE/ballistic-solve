@@ -1,4 +1,4 @@
-#include "ballisticsolver/tools.hpp"
+#include "ballistic-solve/tools.hpp"
 
 #include <boost/math/tools/minima.hpp>
 #include <boost/math/tools/roots.hpp>
@@ -6,7 +6,7 @@
 static int digits = std::numeric_limits<double>::digits;
 static boost::math::tools::eps_tolerance<double> tol(digits);
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     std::pair<double, double> bracket_find_root(
         const std::function<double(double)> &f,

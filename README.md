@@ -1,4 +1,4 @@
-# ballisticsolver
+# ballistic-solve
 
 Ballistic trajectory simulation and fire control solutions.
 
@@ -16,7 +16,7 @@ Ballistic trajectory simulation and fire control solutions.
 
 2. **Activate the environment:**
 ```bat
-   conda activate ballisticsolver
+   conda activate ballistic-solve
 ```
 
 ### Development

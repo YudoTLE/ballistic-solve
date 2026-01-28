@@ -3,7 +3,7 @@ requires = ["scikit-build-core", "nanobind"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "ballisticsolver"
+name = "ballistic-solve"
 version = "0.0.1"
 requires-python = ">=3.12"
 dependencies = ["numpy"]
@@ -13,4 +13,4 @@ license = {file = "LICENSE"}
 
 [tool.scikit-build]
 cmake.build-type = "Release"
-wheel.packages = ["python/src/ballisticsolver"]
+wheel.packages = ["python/src/ballistic-solve"]

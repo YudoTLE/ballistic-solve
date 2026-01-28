@@ -1,6 +1,6 @@
-#include "ballisticsolver/trajectory.hpp"
+#include "ballistic-solve/trajectory.hpp"
 
-namespace ballisticsolver
+namespace ballistic_solve
 {
     Trajectory::Trajectory(
         const std::vector<Eigen::Vector3d> &positions,
