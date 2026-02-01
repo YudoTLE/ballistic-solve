@@ -268,9 +268,6 @@ namespace ballistic_solve
         const double projectile_speed,
         const std::pair<double, double> time_range) const
     {
-        Eigen::Vector2d best_angles;
-        double best_angles_penalty;
-
         auto objective = [&](const double time) -> double
         {
             Eigen::Vector3d current_target_position = target_position(time);
@@ -290,32 +287,21 @@ namespace ballistic_solve
                 time);
 
             // positive = overshoot, negative = undershoot
-            double angles_penalty = (current_target_position - platform_position).dot(computed_point - current_target_position);
-
-            if (angles_penalty < best_angles_penalty)
-            {
-                best_angles = angles;
-                best_angles_penalty = angles_penalty;
-            }
-
-            return angles_penalty;
+            return (current_target_position - platform_position).dot(computed_point - current_target_position);
         };
 
         std::optional<double> overshoot_time, undershoot_time;
 
-        for (double time = time_range.second;
-             time >= time_range.first;
-             time = std::max(time - this->targeting.time_scan_interval, time_range.first))
+        for (double current_time = time_range.second;
+             current_time >= time_range.first;
+             current_time = std::max(current_time - this->targeting.time_scan_interval, time_range.first))
         {
-            best_angles = Eigen::Vector2d::Zero();
-            best_angles_penalty = std::numeric_limits<double>::infinity();
+            std::optional<double> time;
 
-            double value = objective(time);
+            double value = objective(current_time);
             if (value == 0)
             {
-                return Solution{
-                    .direction = to_direction(best_angles),
-                    .time = time};
+                time = current_time;
             }
             if (value > 0)
             {
@@ -323,16 +309,14 @@ namespace ballistic_solve
                 {
                     auto [near_root_lo, near_root_hi] = bracket_find_root(
                         objective,
-                        time,
+                        current_time,
                         undershoot_time.value(),
                         this->targeting.time_max_iteration);
 
-                    return Solution{
-                        .direction = to_direction(best_angles),
-                        .time = (near_root_lo + near_root_hi) * 0.5};
+                    time = (near_root_lo + near_root_hi) * 0.5;
                 }
 
-                overshoot_time = time;
+                overshoot_time = current_time;
             }
             if (value < 0)
             {
@@ -340,19 +324,33 @@ namespace ballistic_solve
                 {
                     auto [near_root_lo, near_root_hi] = bracket_find_root(
                         objective,
-                        time,
+                        current_time,
                         overshoot_time.value(),
                         this->targeting.time_max_iteration);
 
-                    return Solution{
-                        .direction = to_direction(best_angles),
-                        .time = (near_root_lo + near_root_hi) * 0.5};
+                    time = (near_root_lo + near_root_hi) * 0.5;
                 }
 
-                undershoot_time = time;
+                undershoot_time = current_time;
             }
 
-            if (time == time_range.first)
+            if (time.has_value())
+            {
+                Eigen::Vector2d best_angles = this->find_best_angles(
+                    target_position(time.value()),
+                    platform_position,
+                    platform_velocity,
+                    projectile_speed,
+                    time.value()
+                );
+
+                return Solution{
+                    .direction = to_direction(best_angles),
+                    .time = time.value()
+                };
+            }
+
+            if (current_time == time_range.first)
             {
                 break;
             }
@@ -403,10 +401,7 @@ namespace ballistic_solve
         const double projectile_speed,
         const double time) const
     {
-        double best_azimuth = 0.0;
-        double best_azimuth_penalty = std::numeric_limits<double>::infinity();
-
-        auto objective = [&](const double elevation) -> double
+        auto find_best_azimuth = [&](const double elevation) -> std::pair<double, double>
         {
             auto objective = [&](const double azimuth) -> double
             {
@@ -419,17 +414,14 @@ namespace ballistic_solve
                 return (target_position - computed_point).squaredNorm();
             };
 
-            auto [azimuth, azimuth_penalty] = sinlike_find_minima(
+            return sinlike_find_minima(
                 objective, 0.0, std::numbers::pi * 2,
                 this->targeting.h, this->targeting.angle_max_iteration);
+        };
 
-            if (azimuth_penalty < best_azimuth_penalty)
-            {
-                best_azimuth = azimuth;
-                best_azimuth_penalty = azimuth_penalty;
-            }
-
-            return azimuth_penalty;
+        auto objective = [&](const double elevation)
+        {
+            return find_best_azimuth(elevation).second;
         };
 
         double best_elevation = basin_find_minima(
@@ -438,6 +430,8 @@ namespace ballistic_solve
                                     std::numbers::pi * 0.5,
                                     this->targeting.angle_max_iteration)
                                     .first;
+        double best_azimuth = find_best_azimuth(best_elevation)
+                                  .first;
 
         return Eigen::Vector2d(best_azimuth, best_elevation);
     }
