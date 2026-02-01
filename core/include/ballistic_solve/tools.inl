@@ -1,31 +1,38 @@
-#include "ballistic-solve/tools.hpp"
+#ifndef BALLISTIC_SOLVE_TOOLS_INL
+#define BALLISTIC_SOLVE_TOOLS_INL
+
+#include "./tools.hpp"
 
 #include <boost/math/tools/minima.hpp>
 #include <boost/math/tools/roots.hpp>
+#include <limits>
 
 static int digits = std::numeric_limits<double>::digits;
 static boost::math::tools::eps_tolerance<double> tol(digits);
 
 namespace ballistic_solve
 {
+    template <concepts::ScalarFunction F>
     std::pair<double, double> bracket_find_root(
-        const std::function<double(double)> &f,
+        F &&f,
         const double a_x, const double b_x,
         std::uintmax_t max_iter)
     {
-        return boost::math::tools::toms748_solve(f, a_x, b_x, tol, max_iter);
+        return boost::math::tools::toms748_solve(std::forward<F>(f), a_x, b_x, tol, max_iter);
     }
 
+    template <concepts::ScalarFunction F>
     std::pair<double, double> basin_find_minima(
-        const std::function<double(double)> &f,
+        F &&f,
         const double lo_x, const double hi_x,
         std::uintmax_t max_iter)
     {
-        return boost::math::tools::brent_find_minima(f, lo_x, hi_x, digits, max_iter);
+        return boost::math::tools::brent_find_minima(std::forward<F>(f), lo_x, hi_x, digits, max_iter);
     }
 
+    template <concepts::ScalarFunction F>
     std::pair<double, double> sinlike_find_minima(
-        const std::function<double(double)> &f,
+        F &&f,
         const double lo_x, const double hi_x,
         const double h,
         std::uintmax_t max_iter)
@@ -96,3 +103,5 @@ namespace ballistic_solve
         return global_minima;
     }
 }
+
+#endif // BALLISTIC_SOLVE_TOOLS_INL

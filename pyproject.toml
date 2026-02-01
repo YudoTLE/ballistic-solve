@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ballistic-solve"
-version = "0.0.1"
+version = "0.1.1"
 requires-python = ">=3.12"
 dependencies = ["numpy"]
 description = "Ballistic trajectory solver with C++ core and Python bindings"
@@ -13,4 +13,4 @@ license = {file = "LICENSE"}
 
 [tool.scikit-build]
 cmake.build-type = "Release"
-wheel.packages = ["python/src/ballistic-solve"]
+wheel.packages = ["python/src/ballistic_solve"]

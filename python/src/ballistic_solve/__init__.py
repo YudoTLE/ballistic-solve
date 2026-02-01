@@ -1,0 +1,17 @@
+"""Ballistic Solve"""
+
+from ._core import *
+
+__version__ = "0.1.1"
+
+__all__ = [
+    "Environment",
+    "Projectile",
+    "Ballistic",
+    "Trajectory",
+    "Solution",
+    "Integration",
+    "Targeting",
+    "to_direction",
+    "to_angles",
+]
