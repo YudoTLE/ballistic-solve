@@ -9,6 +9,9 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 add_library(ballistic_solve_core STATIC
+    src/ballistic.cpp
+    src/environment.cpp
+    src/projectile.cpp
     src/utility.cpp
 )
 
@@ -18,11 +21,8 @@ target_sources(ballistic_solve_core
         BASE_DIRS include
         FILES
             include/ballistic_solve/ballistic.hpp
-            include/ballistic_solve/ballistic.inl
             include/ballistic_solve/environment.hpp
-            include/ballistic_solve/environment.inl
             include/ballistic_solve/projectile.hpp
-            include/ballistic_solve/projectile.inl
             include/ballistic_solve/tools.hpp
             include/ballistic_solve/tools.inl
             include/ballistic_solve/utility.hpp

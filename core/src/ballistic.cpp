@@ -1,23 +1,15 @@
-#ifndef BALLISTIC_SOLVE_BALLISTIC_INL
-#define BALLISTIC_SOLVE_BALLISTIC_INL
+#include "ballistic_solve/ballistic.hpp"
 
-#include "./ballistic.hpp"
-
-#include "./tools.hpp"
-#include "./utility.hpp"
+#include "ballistic_solve/tools.hpp"
+#include "ballistic_solve/utility.hpp"
 #include <boost/numeric/odeint.hpp>
 #include <numbers>
 
 namespace ballistic_solve
 {
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::Ballistic(
-        Environment<AirDensity, WindVelocity, Temperature> environment,
-        Projectile<DragCoefficient> projectile,
+    Ballistic::Ballistic(
+        Environment environment,
+        Projectile projectile,
         Ballistic::Integration integration,
         Ballistic::Targeting targeting)
         : environment(std::move(environment)),
@@ -27,13 +19,7 @@ namespace ballistic_solve
     {
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    typename Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::Trajectory
-    Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::simulate(
+    Ballistic::Trajectory Ballistic::simulate(
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -73,13 +59,7 @@ namespace ballistic_solve
             .times = trajectory_times};
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    typename Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::Trajectory
-    Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::simulate(
+    Ballistic::Trajectory Ballistic::simulate(
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -94,12 +74,7 @@ namespace ballistic_solve
             time_range);
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    Eigen::Vector3d Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::simulate(
+    Eigen::Vector3d Ballistic::simulate(
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -127,12 +102,7 @@ namespace ballistic_solve
         return x.head<3>();
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    Eigen::Vector3d Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::simulate(
+    Eigen::Vector3d Ballistic::simulate(
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -147,15 +117,8 @@ namespace ballistic_solve
             time);
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    template <concepts::TimeBasedTargetPosition F>
-    std::optional<typename Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::Solution>
-    Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::solve_earliest(
-        F target_position,
+    std::optional<Ballistic::Solution> Ballistic::solve_earliest(
+        Ballistic::TargetPosition target_position,
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -254,15 +217,8 @@ namespace ballistic_solve
         return std::nullopt;
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    template <concepts::TimeBasedTargetPosition F>
-    std::optional<typename Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::Solution>
-    Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::solve_latest(
-        F target_position,
+    std::optional<Ballistic::Solution> Ballistic::solve_latest(
+        Ballistic::TargetPosition target_position,
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
@@ -341,13 +297,11 @@ namespace ballistic_solve
                     platform_position,
                     platform_velocity,
                     projectile_speed,
-                    time.value()
-                );
+                    time.value());
 
                 return Solution{
                     .direction = to_direction(best_angles),
-                    .time = time.value()
-                };
+                    .time = time.value()};
             }
 
             if (current_time == time_range.first)
@@ -359,12 +313,7 @@ namespace ballistic_solve
         return std::nullopt;
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    void Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::system(const State &x, State &dxdt, const double t) const
+    void Ballistic::system(const State &x, State &dxdt, const double t) const
     {
         Eigen::Vector3d position = x.head<3>();
         Eigen::Vector3d velocity = x.tail<3>();
@@ -389,12 +338,7 @@ namespace ballistic_solve
         dxdt.tail<3>() = acceleration;
     }
 
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
-    Eigen::Vector2d Ballistic<AirDensity, WindVelocity, Temperature, DragCoefficient>::find_best_angles(
+    Eigen::Vector2d Ballistic::find_best_angles(
         const Eigen::Vector3d &target_position,
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
@@ -436,5 +380,3 @@ namespace ballistic_solve
         return Eigen::Vector2d(best_azimuth, best_elevation);
     }
 }
-
-#endif // BALLISTIC_SOLVE_BALLISTIC_INL

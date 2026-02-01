@@ -5,29 +5,18 @@
 #include "./projectile.hpp"
 #include <Eigen/dense>
 #include <optional>
+#include <functional>
 #include <vector>
 #include <numeric>
 
 namespace ballistic_solve
 {
-    namespace concepts
-    {
-        template <typename F>
-        concept TimeBasedTargetPosition =
-            std::regular_invocable<F, double> &&
-            std::copy_constructible<F> &&
-            std::convertible_to<std::invoke_result_t<F, double>, Eigen::Vector3d>;
-    }
-    
-    template <
-        concepts::SpatialBasedAirDensity AirDensity,
-        concepts::SpatialBasedWindVelocity WindVelocity,
-        concepts::SpatialBasedTemperature Temperature,
-        concepts::MachBasedDragCoefficient DragCoefficient>
     class Ballistic
     {
     private:
         using State = Eigen::Matrix<double, 6, 1>;
+
+        using TargetPosition = std::function<Eigen::Vector3d(double)>;
 
     public:
         struct Trajectory
@@ -59,18 +48,19 @@ namespace ballistic_solve
         };
 
     public:
-        const Environment<AirDensity, WindVelocity, Temperature> environment;
-        const Projectile<DragCoefficient> projectile;
+        const Environment environment;
+        const Projectile projectile;
         const Integration integration;
         const Targeting targeting;
 
     public:
         Ballistic(
-            Environment<AirDensity, WindVelocity, Temperature> environment,
-            Projectile<DragCoefficient> projectile,
+            Environment environment,
+            Projectile projectile,
             Integration integration = Integration{},
             Targeting targeting = Targeting{});
 
+    public:
         [[nodiscard]] Trajectory simulate(
             const Eigen::Vector3d &platform_position,
             const Eigen::Vector3d &platform_velocity,
@@ -99,17 +89,15 @@ namespace ballistic_solve
             const Eigen::Vector2d &angles,
             double time) const;
 
-        template <concepts::TimeBasedTargetPosition F>
         [[nodiscard]] std::optional<Solution> solve_earliest(
-            F target_position,
+            TargetPosition target_position,
             const Eigen::Vector3d &platform_position,
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
             std::pair<double, double> time_range) const;
 
-        template <concepts::TimeBasedTargetPosition F>
         [[nodiscard]] std::optional<Solution> solve_latest(
-            F target_position,
+            TargetPosition target_position,
             const Eigen::Vector3d &platform_position,
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
@@ -125,9 +113,6 @@ namespace ballistic_solve
             double projectile_speed,
             double time) const;
     };
-
 }
-
-#include "./ballistic.inl"
 
 #endif // BALLISTIC_SOLVE_BALLISTIC_HPP
