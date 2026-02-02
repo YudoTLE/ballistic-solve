@@ -23,9 +23,8 @@ target_sources(ballistic_solve_core
             include/ballistic_solve/ballistic.hpp
             include/ballistic_solve/environment.hpp
             include/ballistic_solve/projectile.hpp
-            include/ballistic_solve/tools.hpp
-            include/ballistic_solve/tools.inl
             include/ballistic_solve/utility.hpp
+            include/ballistic_solve/constants.hpp
 )
 
 target_include_directories(ballistic_solve_core

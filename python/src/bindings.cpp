@@ -91,31 +91,12 @@ NB_MODULE(_core, m)
         .def_ro("direction", &bs::Ballistic::Solution::direction)
         .def_ro("time", &bs::Ballistic::Solution::time);
 
-    nb::class_<bs::Ballistic::Integration>(m, "Integration")
-        .def(nb::init<>())
-        .def(
-            nb::init<double, double, double, double>(),
-            nb::arg("max_step_size") = std::numeric_limits<double>::infinity(),
-            nb::arg("initial_step_size") = 1e-3,
-            nb::arg("absolute_tolerance") = 1e-6,
-            nb::arg("relative_tolerance") = 1e-3)
-        .def_ro("max_step_size", &bs::Ballistic::Integration::max_step_size)
-        .def_ro("initial_step_size", &bs::Ballistic::Integration::initial_step_size)
-        .def_ro("absolute_tolerance", &bs::Ballistic::Integration::absolute_tolerance)
-        .def_ro("relative_tolerance", &bs::Ballistic::Integration::relative_tolerance);
-
     nb::class_<bs::Ballistic::Targeting>(m, "Targeting")
         .def(nb::init<>())
         .def(
-            nb::init<double, double, std::uintmax_t, std::uintmax_t>(),
-            nb::arg("h") = 1e-3,
-            nb::arg("time_scan_interval") = 0.5,
-            nb::arg("angle_max_iteration") = 16,
-            nb::arg("time_max_iteration") = 16)
-        .def_ro("h", &bs::Ballistic::Targeting::h)
-        .def_ro("time_scan_interval", &bs::Ballistic::Targeting::time_scan_interval)
-        .def_ro("angle_max_iteration", &bs::Ballistic::Targeting::angle_max_iteration)
-        .def_ro("time_max_iteration", &bs::Ballistic::Targeting::time_max_iteration);
+            nb::init<double>(),
+            nb::arg("time_scan_interval") = 0.5)
+        .def_ro("time_scan_interval", &bs::Ballistic::Targeting::time_scan_interval);
 
     nb::class_<bs::Ballistic>(m, "Ballistic")
         .def(
@@ -123,14 +104,12 @@ NB_MODULE(_core, m)
             nb::arg("environment"),
             nb::arg("projectile"))
         .def(
-            nb::init<bs::Environment, bs::Projectile, bs::Ballistic::Integration, bs::Ballistic::Targeting>(),
+            nb::init<bs::Environment, bs::Projectile, bs::Ballistic::Targeting>(),
             nb::arg("environment"),
             nb::arg("projectile"),
-            nb::arg("integration"),
             nb::arg("targeting"))
         .def_ro("environment", &bs::Ballistic::environment)
         .def_ro("projectile", &bs::Ballistic::projectile)
-        .def_ro("integration", &bs::Ballistic::integration)
         .def_ro("targeting", &bs::Ballistic::targeting)
         .def(
             "simulate",

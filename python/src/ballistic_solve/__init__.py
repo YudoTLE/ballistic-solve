@@ -10,7 +10,6 @@ __all__ = [
     "Ballistic",
     "Trajectory",
     "Solution",
-    "Integration",
     "Targeting",
     "to_direction",
     "to_angles",

@@ -1,9 +1,12 @@
 #include "ballistic_solve/ballistic.hpp"
 
-#include "ballistic_solve/tools.hpp"
+#include "ballistic_solve/constants.hpp"
 #include "ballistic_solve/utility.hpp"
 #include <unsupported/Eigen/LevenbergMarquardt>
 #include <boost/numeric/odeint.hpp>
+#include <boost/math/tools/minima.hpp>
+#include <boost/math/tools/roots.hpp>
+#include <limits>
 #include <numbers>
 
 namespace ballistic_solve
@@ -11,11 +14,9 @@ namespace ballistic_solve
     Ballistic::Ballistic(
         Environment environment,
         Projectile projectile,
-        Ballistic::Integration integration,
         Ballistic::Targeting targeting)
         : environment(std::move(environment)),
           projectile(std::move(projectile)),
-          integration(std::move(integration)),
           targeting(std::move(targeting))
     {
     }
@@ -28,9 +29,9 @@ namespace ballistic_solve
         const std::pair<double, double> time_range) const
     {
         auto stepper = boost::numeric::odeint::make_controlled(
-            this->integration.absolute_tolerance,
-            this->integration.relative_tolerance,
-            this->integration.max_step_size,
+            constants::integration::abs_tolerance,
+            constants::integration::rel_tolerance,
+            constants::integration::max_step_size,
             boost::numeric::odeint::runge_kutta_dopri5<State>());
 
         std::vector<Eigen::Vector3d> trajectory_positions;
@@ -52,7 +53,7 @@ namespace ballistic_solve
             x,
             time_range.first,
             time_range.second,
-            this->integration.initial_step_size,
+            constants::integration::initial_step_size,
             observer);
 
         return Trajectory{
@@ -83,9 +84,9 @@ namespace ballistic_solve
         const double time) const
     {
         auto stepper = boost::numeric::odeint::make_controlled(
-            this->integration.absolute_tolerance,
-            this->integration.relative_tolerance,
-            this->integration.max_step_size,
+            constants::integration::abs_tolerance,
+            constants::integration::rel_tolerance,
+            constants::integration::max_step_size,
             boost::numeric::odeint::runge_kutta_dopri5<State>());
 
         State x;
@@ -98,7 +99,7 @@ namespace ballistic_solve
             x,
             0.0,
             time,
-            this->integration.initial_step_size);
+            constants::integration::initial_step_size);
 
         return x.head<3>();
     }
@@ -178,11 +179,13 @@ namespace ballistic_solve
             {
                 if (undershoot_time.has_value())
                 {
-                    auto [near_root_lo, near_root_hi] = bracket_find_root(
+                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
+                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         undershoot_time.value(),
                         time,
-                        this->targeting.time_max_iteration);
+                        constants::root_finding::tolerance,
+                        max_iterations);
 
                     return Solution{
                         .direction = to_direction(best_angles),
@@ -195,11 +198,13 @@ namespace ballistic_solve
             {
                 if (overshoot_time.has_value())
                 {
-                    auto [near_root_lo, near_root_hi] = bracket_find_root(
+                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
+                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         overshoot_time.value(),
                         time,
-                        this->targeting.time_max_iteration);
+                        constants::root_finding::tolerance,
+                        max_iterations);
 
                     return Solution{
                         .direction = to_direction(best_angles),
@@ -264,11 +269,13 @@ namespace ballistic_solve
             {
                 if (undershoot_time.has_value())
                 {
-                    auto [near_root_lo, near_root_hi] = bracket_find_root(
+                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
+                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         current_time,
                         undershoot_time.value(),
-                        this->targeting.time_max_iteration);
+                        constants::root_finding::tolerance,
+                        max_iterations);
 
                     time = (near_root_lo + near_root_hi) * 0.5;
                 }
@@ -279,11 +286,13 @@ namespace ballistic_solve
             {
                 if (overshoot_time.has_value())
                 {
-                    auto [near_root_lo, near_root_hi] = bracket_find_root(
+                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
+                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         current_time,
                         overshoot_time.value(),
-                        this->targeting.time_max_iteration);
+                        constants::root_finding::tolerance,
+                        max_iterations);
 
                     time = (near_root_lo + near_root_hi) * 0.5;
                 }
@@ -383,21 +392,20 @@ namespace ballistic_solve
 
         int df(const InputType &angles, JacobianType &fjac) const
         {
-            const double h = 1e-6;
             Eigen::VectorXd fvec_plus(3), fvec_minus(3);
             Eigen::VectorXd angles_h = angles;
 
             for (int i = 0; i < 2; i++)
             {
-                angles_h(i) += h;
+                angles_h(i) += constants::h;
                 (*this)(angles_h, fvec_plus);
 
-                angles_h(i) -= 2 * h;
+                angles_h(i) -= 2 * constants::h;
                 (*this)(angles_h, fvec_minus);
 
                 angles_h(i) = angles(i);
 
-                fjac.col(i) = (fvec_plus - fvec_minus) / (2 * h);
+                fjac.col(i) = (fvec_plus - fvec_minus) / (2 * constants::h);
             }
 
             return 0;

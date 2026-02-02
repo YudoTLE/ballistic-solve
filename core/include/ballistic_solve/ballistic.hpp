@@ -31,33 +31,20 @@ namespace ballistic_solve
             const double time;
         };
 
-        struct Integration
-        {
-            const double max_step_size = std::numeric_limits<double>::infinity();
-            const double initial_step_size = 1e-3;
-            const double absolute_tolerance = 1e-6;
-            const double relative_tolerance = 1e-3;
-        };
-
         struct Targeting
         {
-            const double h = 1e-3;
             const double time_scan_interval = 0.5;
-            const std::uintmax_t angle_max_iteration = 16;
-            const std::uintmax_t time_max_iteration = 16;
         };
 
     public:
         const Environment environment;
         const Projectile projectile;
-        const Integration integration;
         const Targeting targeting;
 
     public:
         Ballistic(
             Environment environment,
             Projectile projectile,
-            Integration integration = Integration{},
             Targeting targeting = Targeting{});
 
     public:
