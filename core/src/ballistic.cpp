@@ -13,11 +13,9 @@ namespace ballistic_solve
 {
     Ballistic::Ballistic(
         Environment environment,
-        Projectile projectile,
-        Ballistic::Targeting targeting)
+        Projectile projectile)
         : environment(std::move(environment)),
-          projectile(std::move(projectile)),
-          targeting(std::move(targeting))
+          projectile(std::move(projectile))
     {
     }
 
@@ -124,7 +122,8 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
-        const std::pair<double, double> time_range) const
+        const std::pair<double, double> time_range,
+        const double time_scan_interval) const
     {
         auto objective = [&](const double time) -> double
         {
@@ -152,7 +151,7 @@ namespace ballistic_solve
 
         for (double current_time = time_range.first;
              current_time <= time_range.second;
-             current_time = std::min(current_time + this->targeting.time_scan_interval, time_range.second))
+             current_time = std::min(current_time + time_scan_interval, time_range.second))
         {
             std::optional<double> time;
 
@@ -224,7 +223,8 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
-        const std::pair<double, double> time_range) const
+        const std::pair<double, double> time_range,
+        const double time_scan_interval) const
     {
         auto objective = [&](const double time) -> double
         {
@@ -252,7 +252,7 @@ namespace ballistic_solve
 
         for (double current_time = time_range.second;
              current_time >= time_range.first;
-             current_time = std::max(current_time - this->targeting.time_scan_interval, time_range.first))
+             current_time = std::max(current_time - time_scan_interval, time_range.first))
         {
             std::optional<double> time;
 

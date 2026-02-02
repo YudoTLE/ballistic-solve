@@ -91,26 +91,17 @@ NB_MODULE(_core, m)
         .def_ro("direction", &bs::Ballistic::Solution::direction)
         .def_ro("time", &bs::Ballistic::Solution::time);
 
-    nb::class_<bs::Ballistic::Targeting>(m, "Targeting")
-        .def(nb::init<>())
-        .def(
-            nb::init<double>(),
-            nb::arg("time_scan_interval") = 0.5)
-        .def_ro("time_scan_interval", &bs::Ballistic::Targeting::time_scan_interval);
-
     nb::class_<bs::Ballistic>(m, "Ballistic")
         .def(
             nb::init<bs::Environment, bs::Projectile>(),
             nb::arg("environment"),
             nb::arg("projectile"))
         .def(
-            nb::init<bs::Environment, bs::Projectile, bs::Ballistic::Targeting>(),
+            nb::init<bs::Environment, bs::Projectile>(),
             nb::arg("environment"),
-            nb::arg("projectile"),
-            nb::arg("targeting"))
+            nb::arg("projectile"))
         .def_ro("environment", &bs::Ballistic::environment)
         .def_ro("projectile", &bs::Ballistic::projectile)
-        .def_ro("targeting", &bs::Ballistic::targeting)
         .def(
             "simulate",
             nb::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, double, const Eigen::Vector3d &, std::pair<double, double>>(&bs::Ballistic::simulate, nb::const_),
@@ -150,7 +141,8 @@ NB_MODULE(_core, m)
             nb::arg("platform_position"),
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
-            nb::arg("time_range"))
+            nb::arg("time_range"),
+            nb::arg("time_scan_interval") = 0.5)
         .def(
             "solve_latest",
             &bs::Ballistic::solve_latest,
@@ -158,7 +150,8 @@ NB_MODULE(_core, m)
             nb::arg("platform_position"),
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
-            nb::arg("time_range"));
+            nb::arg("time_range"),
+            nb::arg("time_scan_interval") = 0.5);
 
     m.def(
         "to_direction",

@@ -31,21 +31,14 @@ namespace ballistic_solve
             const double time;
         };
 
-        struct Targeting
-        {
-            const double time_scan_interval = 0.5;
-        };
-
     public:
         const Environment environment;
         const Projectile projectile;
-        const Targeting targeting;
 
     public:
         Ballistic(
             Environment environment,
-            Projectile projectile,
-            Targeting targeting = Targeting{});
+            Projectile projectile);
 
     public:
         [[nodiscard]] Trajectory simulate(
@@ -81,14 +74,16 @@ namespace ballistic_solve
             const Eigen::Vector3d &platform_position,
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
-            std::pair<double, double> time_range) const;
+            std::pair<double, double> time_range,
+            double time_scan_interval = 0.5) const;
 
         [[nodiscard]] std::optional<Solution> solve_latest(
             TargetPosition target_position,
             const Eigen::Vector3d &platform_position,
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
-            std::pair<double, double> time_range) const;
+            std::pair<double, double> time_range,
+            double time_scan_interval = 0.5) const;
 
     private:
         void system(const State &x, State &dxdt, double time) const;
