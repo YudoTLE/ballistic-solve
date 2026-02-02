@@ -93,6 +93,13 @@ namespace ballistic_solve
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
             double time) const;
+
+        [[nodiscard]] double intercept_error(
+            Ballistic::TargetPosition target_position,
+            const Eigen::Vector3d &platform_position,
+            const Eigen::Vector3d &platform_velocity,
+            double projectile_speed,
+            double time) const;
     };
 }
 
