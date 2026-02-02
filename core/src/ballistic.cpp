@@ -2,6 +2,7 @@
 
 #include "ballistic_solve/tools.hpp"
 #include "ballistic_solve/utility.hpp"
+#include <unsupported/Eigen/LevenbergMarquardt>
 #include <boost/numeric/odeint.hpp>
 #include <numbers>
 
@@ -338,6 +339,71 @@ namespace ballistic_solve
         dxdt.tail<3>() = acceleration;
     }
 
+    struct AngleFunctor : Eigen::DenseFunctor<double>
+    {
+        const Ballistic *ballistic;
+        const Eigen::Vector3d target_position;
+        const Eigen::Vector3d platform_position;
+        const Eigen::Vector3d platform_velocity;
+        const double projectile_speed;
+        const double time;
+
+        AngleFunctor(const Ballistic *ballistic,
+                     const Eigen::Vector3d &target_position,
+                     const Eigen::Vector3d &platform_position,
+                     const Eigen::Vector3d &platform_velocity,
+                     double projectile_speed,
+                     double time)
+            : DenseFunctor<double>(2, 3),
+              ballistic(ballistic),
+              target_position(target_position),
+              platform_position(platform_position),
+              platform_velocity(platform_velocity),
+              projectile_speed(projectile_speed),
+              time(time)
+        {
+        }
+
+        int operator()(const InputType &angles, ValueType &fvec) const
+        {
+            Eigen::Vector3d computed_point = ballistic->simulate(
+                platform_position,
+                platform_velocity,
+                projectile_speed,
+                Eigen::Vector2d(angles[0], angles[1]),
+                time);
+
+            Eigen::Vector3d diff = target_position - computed_point;
+            fvec[0] = diff.x();
+            fvec[1] = diff.y();
+            fvec[2] = diff.z();
+
+            return 0;
+        }
+
+        int df(const InputType &angles, JacobianType &fjac) const
+        {
+            const double h = 1e-6;
+            Eigen::VectorXd fvec_plus(3), fvec_minus(3);
+            Eigen::VectorXd angles_h = angles;
+
+            for (int i = 0; i < 2; i++)
+            {
+                angles_h(i) += h;
+                (*this)(angles_h, fvec_plus);
+
+                angles_h(i) -= 2 * h;
+                (*this)(angles_h, fvec_minus);
+
+                angles_h(i) = angles(i);
+
+                fjac.col(i) = (fvec_plus - fvec_minus) / (2 * h);
+            }
+
+            return 0;
+        }
+    };
+
     Eigen::Vector2d Ballistic::find_best_angles(
         const Eigen::Vector3d &target_position,
         const Eigen::Vector3d &platform_position,
@@ -345,38 +411,15 @@ namespace ballistic_solve
         const double projectile_speed,
         const double time) const
     {
-        auto find_best_azimuth = [&](const double elevation) -> std::pair<double, double>
-        {
-            auto objective = [&](const double azimuth) -> double
-            {
-                Eigen::Vector3d computed_point = this->simulate(
-                    platform_position,
-                    platform_velocity,
-                    projectile_speed,
-                    Eigen::Vector2d(azimuth, elevation),
-                    time);
-                return (target_position - computed_point).squaredNorm();
-            };
+        Eigen::VectorXd angles(2);
+        angles << 0.0, 0.0;
 
-            return sinlike_find_minima(
-                objective, 0.0, std::numbers::pi * 2,
-                this->targeting.h, this->targeting.angle_max_iteration);
-        };
+        AngleFunctor functor(this, target_position, platform_position,
+                             platform_velocity, projectile_speed, time);
+        Eigen::LevenbergMarquardt<AngleFunctor> lm(functor);
 
-        auto objective = [&](const double elevation)
-        {
-            return find_best_azimuth(elevation).second;
-        };
+        lm.minimize(angles);
 
-        double best_elevation = basin_find_minima(
-                                    objective,
-                                    std::numbers::pi * -0.5,
-                                    std::numbers::pi * 0.5,
-                                    this->targeting.angle_max_iteration)
-                                    .first;
-        double best_azimuth = find_best_azimuth(best_elevation)
-                                  .first;
-
-        return Eigen::Vector2d(best_azimuth, best_elevation);
+        return Eigen::Vector2d(angles[0], angles[1]);
     }
 }
