@@ -126,9 +126,6 @@ namespace ballistic_solve
         const double projectile_speed,
         const std::pair<double, double> time_range) const
     {
-        Eigen::Vector2d best_angles;
-        double best_angles_penalty;
-
         auto objective = [&](const double time) -> double
         {
             Eigen::Vector3d current_target_position = target_position(time);
@@ -148,32 +145,21 @@ namespace ballistic_solve
                 time);
 
             // positive = overshoot, negative = undershoot
-            double angles_penalty = (current_target_position - platform_position).dot(computed_point - current_target_position);
-
-            if (angles_penalty < best_angles_penalty)
-            {
-                best_angles = angles;
-                best_angles_penalty = angles_penalty;
-            }
-
-            return angles_penalty;
+            return (current_target_position - platform_position).dot(computed_point - current_target_position);
         };
 
         std::optional<double> overshoot_time, undershoot_time;
 
-        for (double time = time_range.first;
-             time <= time_range.second;
-             time = std::min(time + this->targeting.time_scan_interval, time_range.second))
+        for (double current_time = time_range.first;
+             current_time <= time_range.second;
+             current_time = std::min(current_time + this->targeting.time_scan_interval, time_range.second))
         {
-            best_angles = Eigen::Vector2d::Zero();
-            best_angles_penalty = std::numeric_limits<double>::infinity();
+            std::optional<double> time;
 
-            double value = objective(time);
+            double value = objective(current_time);
             if (value == 0)
             {
-                return Solution{
-                    .direction = to_direction(best_angles),
-                    .time = time};
+                time = current_time;
             }
             if (value > 0)
             {
@@ -183,16 +169,14 @@ namespace ballistic_solve
                     auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         undershoot_time.value(),
-                        time,
+                        current_time,
                         constants::root_finding::tolerance,
                         max_iterations);
 
-                    return Solution{
-                        .direction = to_direction(best_angles),
-                        .time = (near_root_lo + near_root_hi) * 0.5};
+                    time = (near_root_lo + near_root_hi) * 0.5;
                 }
 
-                overshoot_time = time;
+                overshoot_time = current_time;
             }
             if (value < 0)
             {
@@ -202,19 +186,31 @@ namespace ballistic_solve
                     auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
                         objective,
                         overshoot_time.value(),
-                        time,
+                        current_time,
                         constants::root_finding::tolerance,
                         max_iterations);
 
-                    return Solution{
-                        .direction = to_direction(best_angles),
-                        .time = (near_root_lo + near_root_hi) * 0.5};
+                    time = (near_root_lo + near_root_hi) * 0.5;
                 }
 
-                undershoot_time = time;
+                undershoot_time = current_time;
             }
 
-            if (time == time_range.second)
+            if (time.has_value())
+            {
+                Eigen::Vector2d best_angles = this->find_best_angles(
+                    target_position(time.value()),
+                    platform_position,
+                    platform_velocity,
+                    projectile_speed,
+                    time.value());
+
+                return Solution{
+                    .direction = to_direction(best_angles),
+                    .time = time.value()};
+            }
+
+            if (current_time == time_range.second)
             {
                 break;
             }
