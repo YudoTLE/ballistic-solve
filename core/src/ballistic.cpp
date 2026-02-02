@@ -6,8 +6,6 @@
 #include <boost/numeric/odeint.hpp>
 #include <boost/math/tools/minima.hpp>
 #include <boost/math/tools/roots.hpp>
-#include <limits>
-#include <numbers>
 
 namespace ballistic_solve
 {

@@ -3,7 +3,7 @@
 #ifndef BALLISTIC_SOLVE_UTILITY_HPP
 #define BALLISTIC_SOLVE_UTILITY_HPP
 
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 
 namespace ballistic_solve
 {

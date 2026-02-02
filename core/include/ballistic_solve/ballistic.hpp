@@ -7,7 +7,6 @@
 #include <optional>
 #include <functional>
 #include <vector>
-#include <numeric>
 
 namespace ballistic_solve
 {
