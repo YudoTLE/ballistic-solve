@@ -15,8 +15,23 @@ namespace bs = ballistic_solve;
 
 NB_MODULE(_core, m)
 {
-    nb::class_<bs::Environment>(m, "Environment")
-        .def(nb::init<>())
+    nb::class_<bs::Environment>(m, "Environment",
+                                "Represents environmental conditions affecting projectile flight.\n\n"
+                                "This class encapsulates spatially-varying environmental parameters including\n"
+                                "gravity, air density, wind velocity, and temperature. These parameters can be\n"
+                                "constant or vary with position in 3D space.\n"
+                                "All properties are immutable; modification methods return new instances.")
+        .def(nb::init<>(),
+             "Default constructor.\n\n"
+             "Creates an environment with Earth-like atmospheric conditions:\n"
+             "- gravity: (0, 0, -9.81) m/s² (standard Earth gravity pointing downward)\n"
+             "- air_density: ISA (International Standard Atmosphere) model\n"
+             "  ρ(h) = 1.225 * (1 - 0.0065h/288.15)^4.256 kg/m³\n"
+             "  where h is altitude (z-coordinate) clamped to non-negative values\n"
+             "- wind_velocity: zero wind (0, 0, 0) m/s at all positions\n"
+             "- temperature: ISA temperature model\n"
+             "  T(h) = 288.15 - 0.0065h K (15°C at sea level, -6.5°C/km lapse rate)\n"
+             "  where h is altitude (z-coordinate) clamped to non-negative values")
         .def(
             nb::init<
                 Eigen::Vector3d,
@@ -26,82 +41,199 @@ NB_MODULE(_core, m)
             nb::arg("gravity"),
             nb::arg("air_density"),
             nb::arg("wind_velocity"),
-            nb::arg("temperature"))
-        .def_ro("gravity", &bs::Environment::gravity)
-        .def_ro("air_density", &bs::Environment::air_density)
-        .def_ro("wind_velocity", &bs::Environment::wind_velocity)
-        .def_ro("temperature", &bs::Environment::temperature)
+            nb::arg("temperature"),
+            "Constructs an environment with specified conditions.\n\n"
+            "Parameters:\n"
+            "    gravity: Gravity vector in m/s²\n"
+            "    air_density: Function that returns air density for a given position\n"
+            "    wind_velocity: Function that returns wind velocity for a given position\n"
+            "    temperature: Function that returns temperature for a given position")
+        .def_ro("gravity", &bs::Environment::gravity,
+                "Gravity vector in m/s² (typically pointing downward in z-direction)")
+        .def_ro("air_density", &bs::Environment::air_density,
+                "Function returning air density (kg/m³) for a given position")
+        .def_ro("wind_velocity", &bs::Environment::wind_velocity,
+                "Function returning wind velocity vector (m/s) for a given position")
+        .def_ro("temperature", &bs::Environment::temperature,
+                "Function returning temperature (K) for a given position")
         .def(
             "with_gravity",
-            nb::overload_cast<double>(&bs::Environment::with_gravity, nb::const_))
+            nb::overload_cast<double>(&bs::Environment::with_gravity, nb::const_),
+            nb::arg("value"),
+            "Creates a new environment with constant gravity magnitude.\n\n"
+            "Sets gravity to (0, 0, -value), pointing downward along the z-axis.\n\n"
+            "Parameters:\n"
+            "    value: Gravity magnitude in m/s² (must be positive)\n\n"
+            "Returns:\n"
+            "    A new Environment instance with the updated gravity")
         .def(
             "with_gravity",
-            nb::overload_cast<Eigen::Vector3d>(&bs::Environment::with_gravity, nb::const_))
+            nb::overload_cast<Eigen::Vector3d>(&bs::Environment::with_gravity, nb::const_),
+            nb::arg("vector"),
+            "Creates a new environment with a custom gravity vector.\n\n"
+            "Parameters:\n"
+            "    vector: Gravity vector in m/s² (can point in any direction)\n\n"
+            "Returns:\n"
+            "    A new Environment instance with the updated gravity")
         .def(
             "with_air_density",
-            nb::overload_cast<double>(&bs::Environment::with_air_density, nb::const_))
+            nb::overload_cast<double>(&bs::Environment::with_air_density, nb::const_),
+            nb::arg("value"),
+            "Creates a new environment with constant air density.\n\n"
+            "Parameters:\n"
+            "    value: Constant air density in kg/m³ (must be positive, ~1.225 at sea level)\n\n"
+            "Returns:\n"
+            "    A new Environment instance with constant air density at all positions")
         .def(
             "with_air_density",
-            nb::overload_cast<bs::Environment::AirDensity>(&bs::Environment::with_air_density, nb::const_))
+            nb::overload_cast<bs::Environment::AirDensity>(&bs::Environment::with_air_density, nb::const_),
+            nb::arg("function"),
+            "Creates a new environment with a custom air density function.\n\n"
+            "Useful for modeling altitude-dependent density or other spatial variations.\n\n"
+            "Parameters:\n"
+            "    function: Function that computes air density from position\n\n"
+            "Returns:\n"
+            "    A new Environment instance with the updated air density function")
         .def(
             "with_wind_velocity",
-            nb::overload_cast<Eigen::Vector3d>(&bs::Environment::with_wind_velocity, nb::const_))
+            nb::overload_cast<Eigen::Vector3d>(&bs::Environment::with_wind_velocity, nb::const_),
+            nb::arg("value"),
+            "Creates a new environment with constant wind velocity.\n\n"
+            "Parameters:\n"
+            "    value: Constant wind velocity vector in m/s\n\n"
+            "Returns:\n"
+            "    A new Environment instance with constant wind at all positions")
         .def(
             "with_wind_velocity",
-            nb::overload_cast<bs::Environment::WindVelocity>(&bs::Environment::with_wind_velocity, nb::const_))
+            nb::overload_cast<bs::Environment::WindVelocity>(&bs::Environment::with_wind_velocity, nb::const_),
+            nb::arg("function"),
+            "Creates a new environment with a custom wind velocity function.\n\n"
+            "Useful for modeling altitude-dependent winds or spatially-varying wind fields.\n\n"
+            "Parameters:\n"
+            "    function: Function that computes wind velocity from position\n\n"
+            "Returns:\n"
+            "    A new Environment instance with the updated wind velocity function")
         .def(
             "with_temperature",
-            nb::overload_cast<double>(&bs::Environment::with_temperature, nb::const_))
+            nb::overload_cast<double>(&bs::Environment::with_temperature, nb::const_),
+            nb::arg("value"),
+            "Creates a new environment with constant temperature.\n\n"
+            "Parameters:\n"
+            "    value: Constant temperature in Kelvin (must be positive, ~288.15 K at sea level)\n\n"
+            "Returns:\n"
+            "    A new Environment instance with constant temperature at all positions")
         .def(
             "with_temperature",
-            nb::overload_cast<bs::Environment::Temperature>(&bs::Environment::with_temperature, nb::const_));
+            nb::overload_cast<bs::Environment::Temperature>(&bs::Environment::with_temperature, nb::const_),
+            nb::arg("function"),
+            "Creates a new environment with a custom temperature function.\n\n"
+            "Useful for modeling altitude-dependent temperature or other spatial variations.\n\n"
+            "Parameters:\n"
+            "    function: Function that computes temperature from position\n\n"
+            "Returns:\n"
+            "    A new Environment instance with the updated temperature function");
 
-    nb::class_<bs::Projectile>(m, "Projectile")
-        .def(nb::init<>())
+    nb::class_<bs::Projectile>(m, "Projectile",
+                               "Represents a projectile with physical properties for ballistic trajectory calculations.\n\n"
+                               "This class encapsulates the physical characteristics of a projectile that affect its\n"
+                               "flight dynamics, including mass, cross-sectional area, and drag coefficient.\n"
+                               "All properties are immutable; modification methods return new instances.")
+        .def(nb::init<>(),
+             "Default constructor.\n\n"
+             "Creates a projectile with default values:\n"
+             "- mass: 1.0 kg\n"
+             "- area: 1.0 m²\n"
+             "- drag_coefficient: constant 0.47 (approximate value for a sphere)")
         .def(
             nb::init<double, double, bs::Projectile::DragCoefficient>(),
             nb::arg("mass"),
             nb::arg("area"),
-            nb::arg("drag_coefficient"))
-        .def_ro("mass", &bs::Projectile::mass)
-        .def_ro("area", &bs::Projectile::area)
-        .def_ro("drag_coefficient", &bs::Projectile::drag_coefficient)
+            nb::arg("drag_coefficient"),
+            "Constructs a projectile with specified properties.\n\n"
+            "Parameters:\n"
+            "    mass: Mass of the projectile in kg (must be positive)\n"
+            "    area: Cross-sectional area in m² (must be positive)\n"
+            "    drag_coefficient: Function that returns drag coefficient for a given velocity")
+        .def_ro("mass", &bs::Projectile::mass,
+                "Mass of the projectile in kilograms")
+        .def_ro("area", &bs::Projectile::area,
+                "Cross-sectional area of the projectile in square meters")
+        .def_ro("drag_coefficient", &bs::Projectile::drag_coefficient,
+                "Function returning drag coefficient (dimensionless) based on velocity")
         .def(
             "with_mass",
             &bs::Projectile::with_mass,
-            nb::arg("value"))
+            nb::arg("value"),
+            "Creates a new projectile with a different mass.\n\n"
+            "Parameters:\n"
+            "    value: New mass in kg (must be positive)\n\n"
+            "Returns:\n"
+            "    A new Projectile instance with the updated mass")
         .def(
             "with_area",
             &bs::Projectile::with_area,
-            nb::arg("value"))
+            nb::arg("value"),
+            "Creates a new projectile with a different cross-sectional area.\n\n"
+            "Parameters:\n"
+            "    value: New cross-sectional area in m² (must be positive)\n\n"
+            "Returns:\n"
+            "    A new Projectile instance with the updated area")
         .def(
             "with_drag_coefficient",
             nb::overload_cast<double>(&bs::Projectile::with_drag_coefficient, nb::const_),
-            nb::arg("value"))
+            nb::arg("value"),
+            "Creates a new projectile with a constant drag coefficient.\n\n"
+            "Parameters:\n"
+            "    value: Constant drag coefficient (dimensionless, typically 0.1 to 1.0)\n\n"
+            "Returns:\n"
+            "    A new Projectile instance with a constant drag coefficient function")
         .def(
             "with_drag_coefficient",
             nb::overload_cast<bs::Projectile::DragCoefficient>(&bs::Projectile::with_drag_coefficient, nb::const_),
-            nb::arg("function"));
+            nb::arg("function"),
+            "Creates a new projectile with a custom drag coefficient function.\n\n"
+            "This allows for velocity-dependent drag coefficients, which is important\n"
+            "for accurate modeling at transonic and supersonic velocities.\n\n"
+            "Parameters:\n"
+            "    function: Function that computes drag coefficient from velocity\n\n"
+            "Returns:\n"
+            "    A new Projectile instance with the updated drag coefficient function");
 
-    nb::class_<bs::Ballistic::Trajectory>(m, "Trajectory")
-        .def_ro("positions", &bs::Ballistic::Trajectory::positions)
-        .def_ro("times", &bs::Ballistic::Trajectory::times);
+    nb::class_<bs::Ballistic::Trajectory>(m, "Trajectory",
+                                          "Contains the computed trajectory of a projectile.")
+        .def_ro("positions", &bs::Ballistic::Trajectory::positions,
+                "Sequence of 3D positions along the trajectory in meters")
+        .def_ro("times", &bs::Ballistic::Trajectory::times,
+                "Corresponding time values for each position in seconds");
 
-    nb::class_<bs::Ballistic::Solution>(m, "Solution")
-        .def_ro("direction", &bs::Ballistic::Solution::direction)
-        .def_ro("time", &bs::Ballistic::Solution::time);
+    nb::class_<bs::Ballistic::Solution>(m, "Solution",
+                                        "Contains a firing solution for intercepting a target.")
+        .def_ro("direction", &bs::Ballistic::Solution::direction,
+                "Unit direction vector to aim the projectile")
+        .def_ro("time", &bs::Ballistic::Solution::time,
+                "Time of intercept in seconds");
 
-    nb::class_<bs::Ballistic>(m, "Ballistic")
+    nb::class_<bs::Ballistic>(m, "Ballistic",
+                              "Ballistic trajectory solver for projectile motion with environmental effects.\n\n"
+                              "This class provides methods to simulate projectile trajectories and solve firing\n"
+                              "solutions for moving or stationary targets. It accounts for gravity, air drag,\n"
+                              "wind, and other environmental factors.")
+        .def(
+            nb::init<bs::Environment, bs::Projectile>(),
+            nb::arg("environment"),
+            nb::arg("projectile"),
+            "Constructs a ballistic solver with given environment and projectile.\n\n"
+            "Parameters:\n"
+            "    environment: Environmental conditions (gravity, air density, wind, temperature)\n"
+            "    projectile: Projectile properties (mass, area, drag coefficient)")
         .def(
             nb::init<bs::Environment, bs::Projectile>(),
             nb::arg("environment"),
             nb::arg("projectile"))
-        .def(
-            nb::init<bs::Environment, bs::Projectile>(),
-            nb::arg("environment"),
-            nb::arg("projectile"))
-        .def_ro("environment", &bs::Ballistic::environment)
-        .def_ro("projectile", &bs::Ballistic::projectile)
+        .def_ro("environment", &bs::Ballistic::environment,
+                "Environmental conditions affecting the projectile")
+        .def_ro("projectile", &bs::Ballistic::projectile,
+                "Physical properties of the projectile")
         .def(
             "simulate",
             nb::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, double, const Eigen::Vector3d &, std::pair<double, double>>(&bs::Ballistic::simulate, nb::const_),
@@ -109,7 +241,16 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("direction"),
-            nb::arg("time_range"))
+            nb::arg("time_range"),
+            "Simulates projectile trajectory over a time range with specified direction.\n\n"
+            "Parameters:\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    direction: Unit direction vector for the projectile launch\n"
+            "    time_range: Time interval (start, end) for simulation in seconds\n\n"
+            "Returns:\n"
+            "    Trajectory containing positions and times along the flight path")
         .def(
             "simulate",
             nb::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, double, const Eigen::Vector2d &, std::pair<double, double>>(&bs::Ballistic::simulate, nb::const_),
@@ -117,7 +258,16 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("angles"),
-            nb::arg("time_range"))
+            nb::arg("time_range"),
+            "Simulates projectile trajectory over a time range with specified angles.\n\n"
+            "Parameters:\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    angles: Launch angles [azimuth, elevation] in radians\n"
+            "    time_range: Time interval (start, end) for simulation in seconds\n\n"
+            "Returns:\n"
+            "    Trajectory containing positions and times along the flight path")
         .def(
             "simulate",
             nb::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, double, const Eigen::Vector3d &, double>(&bs::Ballistic::simulate, nb::const_),
@@ -125,7 +275,16 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("direction"),
-            nb::arg("time"))
+            nb::arg("time"),
+            "Simulates projectile position at a specific time with specified direction.\n\n"
+            "Parameters:\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    direction: Unit direction vector for the projectile launch\n"
+            "    time: Time at which to compute position in seconds\n\n"
+            "Returns:\n"
+            "    Projectile position at the specified time in meters")
         .def(
             "simulate",
             nb::overload_cast<const Eigen::Vector3d &, const Eigen::Vector3d &, double, const Eigen::Vector2d &, double>(&bs::Ballistic::simulate, nb::const_),
@@ -133,7 +292,16 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("angles"),
-            nb::arg("time"))
+            nb::arg("time"),
+            "Simulates projectile position at a specific time with specified angles.\n\n"
+            "Parameters:\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    angles: Launch angles [azimuth, elevation] in radians\n"
+            "    time: Time at which to compute position in seconds\n\n"
+            "Returns:\n"
+            "    Projectile position at the specified time in meters")
         .def(
             "solve_earliest",
             &bs::Ballistic::solve_earliest,
@@ -142,7 +310,19 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("time_range"),
-            nb::arg("time_scan_interval") = 0.5)
+            nb::arg("time_scan_interval") = 0.5,
+            "Finds the earliest firing solution to intercept a moving target.\n\n"
+            "Searches for the earliest time within the specified range where the projectile\n"
+            "can intercept the target. Uses a time-scanning approach with the given interval.\n\n"
+            "Parameters:\n"
+            "    target_position: Function providing target position as a function of time\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    time_range: Time interval (start, end) to search for solutions in seconds\n"
+            "    time_scan_interval: Time step for scanning potential intercept times (default: 0.5 s)\n\n"
+            "Returns:\n"
+            "    Optional Solution containing firing direction and intercept time, or None if no solution exists")
         .def(
             "solve_latest",
             &bs::Ballistic::solve_latest,
@@ -151,14 +331,44 @@ NB_MODULE(_core, m)
             nb::arg("platform_velocity"),
             nb::arg("projectile_speed"),
             nb::arg("time_range"),
-            nb::arg("time_scan_interval") = 0.5);
+            nb::arg("time_scan_interval") = 0.5,
+            "Finds the latest firing solution to intercept a moving target.\n\n"
+            "Searches for the latest time within the specified range where the projectile\n"
+            "can intercept the target. Uses a time-scanning approach with the given interval.\n\n"
+            "Parameters:\n"
+            "    target_position: Function providing target position as a function of time\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    time_range: Time interval (start, end) to search for solutions in seconds\n"
+            "    time_scan_interval: Time step for scanning potential intercept times (default: 0.5 s)\n\n"
+            "Returns:\n"
+            "    Optional Solution containing firing direction and intercept time, or None if no solution exists");
 
     m.def(
         "to_direction",
         &bs::to_direction,
-        nb::arg("angles"));
+        nb::arg("angles"),
+        "Converts angular representation to a unit direction vector.\n\n"
+        "Converts azimuth and elevation angles to a 3D unit direction vector\n"
+        "using spherical coordinate conversion.\n\n"
+        "Parameters:\n"
+        "    angles: Vector containing [azimuth, elevation] in radians\n"
+        "            - azimuth: horizontal angle measured from the positive x-axis\n"
+        "            - elevation: vertical angle measured from the xy-plane\n\n"
+        "Returns:\n"
+        "    Unit direction vector in 3D space");
     m.def(
         "to_angles",
         &bs::to_angles,
-        nb::arg("direction"));
+        nb::arg("direction"),
+        "Converts a direction vector to angular representation.\n\n"
+        "Converts a 3D direction vector to azimuth and elevation angles\n"
+        "using inverse spherical coordinate conversion.\n\n"
+        "Parameters:\n"
+        "    direction: Direction vector in 3D space (need not be normalized)\n\n"
+        "Returns:\n"
+        "    Vector containing [azimuth, elevation] in radians\n"
+        "    - azimuth: horizontal angle measured from the positive x-axis, range [-π, π]\n"
+        "    - elevation: vertical angle measured from the xy-plane, range [-π/2, π/2]");
 }
