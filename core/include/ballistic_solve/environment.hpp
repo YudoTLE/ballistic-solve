@@ -58,15 +58,11 @@ namespace ballistic_solve
         /**
          * @brief Default constructor.
          * 
-         * Creates an environment with Earth-like atmospheric conditions:
-         * - gravity: (0, 0, -9.81) m/s² (standard Earth gravity pointing downward)
-         * - air_density: ISA (International Standard Atmosphere) model
-         *   ρ(h) = 1.225 * (1 - 0.0065h/288.15)^4.256 kg/m³
-         *   where h is altitude (z-coordinate) clamped to non-negative values
-         * - wind_velocity: zero wind (0, 0, 0) m/s at all positions
-         * - temperature: ISA temperature model
-         *   T(h) = 288.15 - 0.0065h K (15°C at sea level, -6.5°C/km lapse rate)
-         *   where h is altitude (z-coordinate) clamped to non-negative values
+         * Creates an environment with all parameters set to zero:
+         * - gravity: (0, 0, 0) m/s²
+         * - air_density: 0 kg/m³ at all positions
+         * - wind_velocity: (0, 0, 0) m/s at all positions
+         * - temperature: 0 K at all positions
          */
         Environment();
 
@@ -82,6 +78,46 @@ namespace ballistic_solve
                     AirDensity air_density,
                     WindVelocity wind_velocity,
                     Temperature temperature);
+
+        public:
+        /**
+         * @brief Creates an Earth standard atmosphere environment.
+         * 
+         * Uses International Standard Atmosphere (ISA) model:
+         * - gravity: (0, 0, -9.81) m/s²
+         * - air_density: ISA model ρ(h) = 1.225 * (1 - 0.0065h/288.15)^4.256 kg/m³
+         * - wind_velocity: zero wind
+         * - temperature: ISA model T(h) = 288.15 - 0.0065h K
+         * 
+         * @return Environment with Earth-like conditions
+         */
+        [[nodiscard]] static Environment earth_standard();
+
+        /**
+         * @brief Creates a lunar environment.
+         * 
+         * Moon conditions:
+         * - gravity: (0, 0, -1.62) m/s² (approximately 1/6 of Earth's gravity)
+         * - air_density: 0 kg/m³ (vacuum - no atmosphere)
+         * - wind_velocity: (0, 0, 0) m/s (no atmosphere, no wind)
+         * - temperature: 0 K (set to zero; actual lunar temperature varies dramatically)
+         * 
+         * @return Environment with Moon-like conditions
+         */
+        [[nodiscard]] static Environment moon_standard();
+
+        /**
+         * @brief Creates a Martian environment.
+         * 
+         * Mars conditions:
+         * - gravity: (0, 0, -3.71) m/s² (approximately 38% of Earth's gravity)
+         * - air_density: 0.020 kg/m³ (thin CO₂ atmosphere, about 1% of Earth's)
+         * - wind_velocity: (0, 0, 0) m/s (no wind by default, though Mars has dust storms)
+         * - temperature: 210 K (approximately -63°C, average surface temperature)
+         * 
+         * @return Environment with Mars-like conditions
+         */
+        [[nodiscard]] static Environment mars_standard();
 
     public:
         /**

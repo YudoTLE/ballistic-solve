@@ -3,21 +3,13 @@
 namespace ballistic_solve
 {
     Environment::Environment()
-        : gravity(Eigen::Vector3d(0, 0, -9.81)),
-          air_density(
-              [](Eigen::Vector3d pos)
-              {
-                double h = std::max(0.0, pos.z()); 
-                double term = 1.0 - (0.0065 * h) / 288.15;
-                return 1.225 * std::pow(term, 4.256); }),
-          wind_velocity(
-              [](Eigen::Vector3d)
-              { return Eigen::Vector3d::Zero(); }),
-          temperature(
-              [](Eigen::Vector3d pos)
-              {
-                double h = std::max(0.0, pos.z());
-                return 288.15 - 0.0065 * h; })
+        : gravity(Eigen::Vector3d::Zero()),
+          air_density([](Eigen::Vector3d)
+                      { return 0.0; }),
+          wind_velocity([](Eigen::Vector3d)
+                        { return Eigen::Vector3d::Zero(); }),
+          temperature([](Eigen::Vector3d)
+                      { return 0.0; })
     {
     }
 
@@ -31,6 +23,49 @@ namespace ballistic_solve
           wind_velocity(std::move(wind_velocity)),
           temperature(std::move(temperature))
     {
+    }
+
+    Environment Environment::earth_standard()
+    {
+        return Environment(
+            Eigen::Vector3d(0, 0, -9.81),
+            [](Eigen::Vector3d pos)
+            {
+                double h = std::max(0.0, pos.z());
+                double term = 1.0 - (0.0065 * h) / 288.15;
+                return 1.225 * std::pow(term, 4.256);
+            },
+            [](Eigen::Vector3d)
+            { return Eigen::Vector3d::Zero(); },
+            [](Eigen::Vector3d pos)
+            {
+                double h = std::max(0.0, pos.z());
+                return 288.15 - 0.0065 * h;
+            });
+    }
+
+    Environment Environment::moon_standard()
+    {
+        return Environment(
+            Eigen::Vector3d(0, 0, -1.62),
+            [](Eigen::Vector3d)
+            { return 0.0; },
+            [](Eigen::Vector3d)
+            { return Eigen::Vector3d::Zero(); },
+            [](Eigen::Vector3d)
+            { return 0.0; });
+    }
+
+    Environment Environment::mars_standard()
+    {
+        return Environment(
+            Eigen::Vector3d(0, 0, -3.71),
+            [](Eigen::Vector3d)
+            { return 0.020; },
+            [](Eigen::Vector3d)
+            { return Eigen::Vector3d::Zero(); },
+            [](Eigen::Vector3d)
+            { return 210.0; });
     }
 
     Environment Environment::with_gravity(double value) const

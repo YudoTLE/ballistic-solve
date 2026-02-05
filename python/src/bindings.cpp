@@ -23,15 +23,11 @@ NB_MODULE(_core, m)
                                 "All properties are immutable; modification methods return new instances.")
         .def(nb::init<>(),
              "Default constructor.\n\n"
-             "Creates an environment with Earth-like atmospheric conditions:\n"
-             "- gravity: (0, 0, -9.81) m/s² (standard Earth gravity pointing downward)\n"
-             "- air_density: ISA (International Standard Atmosphere) model\n"
-             "  ρ(h) = 1.225 * (1 - 0.0065h/288.15)^4.256 kg/m³\n"
-             "  where h is altitude (z-coordinate) clamped to non-negative values\n"
-             "- wind_velocity: zero wind (0, 0, 0) m/s at all positions\n"
-             "- temperature: ISA temperature model\n"
-             "  T(h) = 288.15 - 0.0065h K (15°C at sea level, -6.5°C/km lapse rate)\n"
-             "  where h is altitude (z-coordinate) clamped to non-negative values")
+             "Creates an environment with all parameters set to zero:\n"
+             "- gravity: (0, 0, 0) m/s²\n"
+             "- air_density: 0 kg/m³ at all positions\n"
+             "- wind_velocity: (0, 0, 0) m/s at all positions\n"
+             "- temperature: 0 K at all positions")
         .def(
             nb::init<
                 Eigen::Vector3d,
@@ -48,6 +44,33 @@ NB_MODULE(_core, m)
             "    air_density: Function that returns air density for a given position\n"
             "    wind_velocity: Function that returns wind velocity for a given position\n"
             "    temperature: Function that returns temperature for a given position")
+        .def_static("earth_standard", &bs::Environment::earth_standard,
+                    "Creates an Earth standard atmosphere environment.\n\n"
+                    "Uses International Standard Atmosphere (ISA) model:\n"
+                    "- gravity: (0, 0, -9.81) m/s²\n"
+                    "- air_density: ISA model ρ(h) = 1.225 * (1 - 0.0065h/288.15)^4.256 kg/m³\n"
+                    "- wind_velocity: zero wind\n"
+                    "- temperature: ISA model T(h) = 288.15 - 0.0065h K\n\n"
+                    "Returns:\n"
+                    "    Environment with Earth-like conditions")
+        .def_static("moon_standard", &bs::Environment::moon_standard,
+                    "Creates a lunar environment.\n\n"
+                    "Moon conditions:\n"
+                    "- gravity: (0, 0, -1.62) m/s² (approximately 1/6 of Earth's gravity)\n"
+                    "- air_density: 0 kg/m³ (vacuum - no atmosphere)\n"
+                    "- wind_velocity: (0, 0, 0) m/s (no atmosphere, no wind)\n"
+                    "- temperature: 0 K (set to zero; actual lunar temperature varies dramatically)\n\n"
+                    "Returns:\n"
+                    "    Environment with Moon-like conditions")
+        .def_static("mars_standard", &bs::Environment::mars_standard,
+                    "Creates a Martian environment.\n\n"
+                    "Mars conditions:\n"
+                    "- gravity: (0, 0, -3.71) m/s² (approximately 38% of Earth's gravity)\n"
+                    "- air_density: 0.020 kg/m³ (thin CO₂ atmosphere, about 1% of Earth's)\n"
+                    "- wind_velocity: (0, 0, 0) m/s (no wind by default, though Mars has dust storms)\n"
+                    "- temperature: 210 K (approximately -63°C, average surface temperature)\n\n"
+                    "Returns:\n"
+                    "    Environment with Mars-like conditions")
         .def_ro("gravity", &bs::Environment::gravity,
                 "Gravity vector in m/s² (typically pointing downward in z-direction)")
         .def_ro("air_density", &bs::Environment::air_density,
