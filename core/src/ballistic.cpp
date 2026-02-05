@@ -22,6 +22,7 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
         const Eigen::Vector3d &direction,
+        const bool is_normalized_direction,
         const std::pair<double, double> time_range) const
     {
         auto stepper = boost::numeric::odeint::make_controlled(
@@ -40,7 +41,8 @@ namespace ballistic_solve
         };
 
         State x;
-        x << platform_position, platform_velocity + direction * projectile_speed;
+        x << platform_position,
+            platform_velocity + (is_normalized_direction ? direction : direction.normalized()) * projectile_speed;
 
         boost::numeric::odeint::integrate_adaptive(
             stepper,
@@ -61,6 +63,22 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
+        const Eigen::Vector3d &direction,
+        const std::pair<double, double> time_range) const
+    {
+        return this->simulate(
+            platform_position,
+            platform_velocity,
+            projectile_speed,
+            direction,
+            false,
+            time_range);
+    }
+
+    Ballistic::Trajectory Ballistic::simulate(
+        const Eigen::Vector3d &platform_position,
+        const Eigen::Vector3d &platform_velocity,
+        const double projectile_speed,
         const Eigen::Vector2d &angles,
         const std::pair<double, double> time_range) const
     {
@@ -69,6 +87,7 @@ namespace ballistic_solve
             platform_velocity,
             projectile_speed,
             to_direction(angles),
+            true,
             time_range);
     }
 
@@ -77,6 +96,7 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
         const Eigen::Vector3d &direction,
+        const bool is_normalized_direction,
         const double time) const
     {
         auto stepper = boost::numeric::odeint::make_controlled(
@@ -86,7 +106,8 @@ namespace ballistic_solve
             boost::numeric::odeint::runge_kutta_dopri5<State>());
 
         State x;
-        x << platform_position, platform_velocity + direction * projectile_speed;
+        x << platform_position,
+            platform_velocity + (is_normalized_direction ? direction : direction.normalized()) * projectile_speed;
 
         boost::numeric::odeint::integrate_adaptive(
             stepper,
@@ -104,6 +125,22 @@ namespace ballistic_solve
         const Eigen::Vector3d &platform_position,
         const Eigen::Vector3d &platform_velocity,
         const double projectile_speed,
+        const Eigen::Vector3d &direction,
+        const double time) const
+    {
+        return this->simulate(
+            platform_position,
+            platform_velocity,
+            projectile_speed,
+            direction,
+            false,
+            time);
+    }
+
+    Eigen::Vector3d Ballistic::simulate(
+        const Eigen::Vector3d &platform_position,
+        const Eigen::Vector3d &platform_velocity,
+        const double projectile_speed,
         const Eigen::Vector2d &angles,
         const double time) const
     {
@@ -112,6 +149,7 @@ namespace ballistic_solve
             platform_velocity,
             projectile_speed,
             to_direction(angles),
+            true,
             time);
     }
 
