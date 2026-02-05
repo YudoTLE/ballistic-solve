@@ -195,22 +195,34 @@ NB_MODULE(_core, m)
                     "- drag_coefficient: 0.25 (smooth modern ball)\n\n"
                     "Returns:\n"
                     "    Projectile with standard soccer ball properties")
-        .def_static("basketball_standard", &bs::Projectile::basketball_standard,
-                    "Creates a standard basketball projectile.\n\n"
-                    "NBA regulation basketball:\n"
-                    "- mass: 0.624 kg (624 grams)\n"
-                    "- area: 0.0457 m² (diameter 24.1cm, radius 12.05cm)\n"
-                    "- drag_coefficient: 0.30 (textured surface)\n\n"
+        .def_static("m61_vulcan_round", &bs::Projectile::m61_vulcan_round,
+                    "Creates an M61 Vulcan 20mm autocannon round.\n\n"
+                    "M61 Vulcan 20mm projectile (M50 API):\n"
+                    "- mass: 0.100 kg (100 grams)\n"
+                    "- area: 3.14159e-4 m² (20mm caliber)\n"
+                    "- drag_coefficient: Mach-dependent (0.295-0.60)\n\n"
+                    "Drag coefficient varies with Mach number:\n"
+                    "- Subsonic (M < 0.8): Cd = 0.295\n"
+                    "- Transonic (M 0.8-1.0): Cd rises to 0.60 (drag spike)\n"
+                    "- Supersonic peak (M 1.0-1.2): Cd drops from 0.60 to 0.50\n"
+                    "- Supersonic (M 1.2-2.0): Cd decreases to 0.45\n"
+                    "- High supersonic (M 2.0-3.5): Cd decreases to 0.40\n\n"
                     "Returns:\n"
-                    "    Projectile with standard basketball properties")
-        .def_static("golf_ball_standard", &bs::Projectile::golf_ball_standard,
-                    "Creates a standard golf ball projectile.\n\n"
-                    "USGA regulation golf ball:\n"
-                    "- mass: 0.0459 kg (45.9 grams)\n"
-                    "- area: 0.00143 m² (diameter 42.7mm, radius 21.35mm)\n"
-                    "- drag_coefficient: 0.25 (dimpled surface reduces drag)\n\n"
+                    "    Projectile with M61 Vulcan 20mm properties")
+        .def_static("gsh30_round", &bs::Projectile::gsh30_round,
+                    "Creates a GSh-30 30mm autocannon round.\n\n"
+                    "GSh-30 30mm projectile (3UBR8 API):\n"
+                    "- mass: 0.390 kg (390 grams)\n"
+                    "- area: 7.069e-4 m² (30mm caliber)\n"
+                    "- drag_coefficient: Mach-dependent (0.280-0.60)\n\n"
+                    "Drag coefficient varies with Mach number:\n"
+                    "- Subsonic (M < 0.8): Cd = 0.280\n"
+                    "- Transonic (M 0.8-1.0): Cd rises to 0.60 (drag spike)\n"
+                    "- Supersonic peak (M 1.0-1.2): Cd drops from 0.60 to 0.50\n"
+                    "- Supersonic (M 1.2-2.5): Cd decreases to 0.44\n"
+                    "- High supersonic (M 2.5-3.0): Cd decreases to 0.42\n\n"
                     "Returns:\n"
-                    "    Projectile with standard golf ball properties")
+                    "    Projectile with GSh-30 30mm properties")
         .def_ro("mass", &bs::Projectile::mass,
                 "Mass of the projectile in kilograms")
         .def_ro("area", &bs::Projectile::area,

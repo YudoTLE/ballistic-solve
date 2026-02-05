@@ -109,6 +109,49 @@ namespace ballistic_solve
          */
         [[nodiscard]] static Projectile golf_ball_standard();
 
+        /**
+         * @brief Creates an M61 Vulcan 20mm autocannon round.
+         *
+         * M61 Vulcan 20mm projectile (M50 API):
+         * - mass: 0.100 kg (100 grams)
+         * - area: 3.14159e-4 m² (20mm caliber)
+         * - drag_coefficient: Mach-dependent (0.295-0.60)
+         *
+         * Drag coefficient varies with Mach number:
+         * - Subsonic (M < 0.8): Cd = 0.295
+         * - Transonic (M 0.8-1.0): Cd rises to 0.60 (drag spike)
+         * - Supersonic peak (M 1.0-1.2): Cd drops from 0.60 to 0.50
+         * - Supersonic (M 1.2-2.0): Cd decreases to 0.45
+         * - High supersonic (M 2.0-3.5): Cd decreases to 0.40
+         *
+         * Boat-tail design reduces base drag in subsonic and supersonic flight.
+         *
+         * @return Projectile with M61 Vulcan 20mm properties
+         */
+        [[nodiscard]] static Projectile m61_vulcan_round();
+
+        /**
+         * @brief Creates a GSh-30 30mm autocannon round.
+         *
+         * GSh-30 30mm projectile (3UBR8 API):
+         * - mass: 0.390 kg (390 grams)
+         * - area: 7.069e-4 m² (30mm caliber)
+         * - drag_coefficient: Mach-dependent (0.280-0.60)
+         *
+         * Drag coefficient varies with Mach number:
+         * - Subsonic (M < 0.8): Cd = 0.280
+         * - Transonic (M 0.8-1.0): Cd rises to 0.60 (drag spike)
+         * - Supersonic peak (M 1.0-1.2): Cd drops from 0.60 to 0.50
+         * - Supersonic (M 1.2-2.5): Cd decreases to 0.44
+         * - High supersonic (M 2.5-3.0): Cd decreases to 0.42
+         *
+         * Higher sectional density provides better ballistic coefficient and
+         * energy retention compared to lighter 20mm projectiles.
+         *
+         * @return Projectile with GSh-30 30mm properties
+         */
+        [[nodiscard]] static Projectile gsh30_round();
+
     public:
         /**
          * @brief Creates a new projectile with a different mass.

@@ -56,6 +56,76 @@ namespace ballistic_solve
             { return 0.25; });
     }
 
+    Projectile Projectile::m61_vulcan_round()
+    {
+        return Projectile(
+            0.100,
+            3.14159e-4,
+            [](double mach)
+            {
+                if (mach < 0.8)
+                {
+                    return 0.295;
+                }
+                if (mach < 1.0)
+                {
+                    double t = (mach - 0.8) / 0.2;
+                    return 0.295 + t * (0.60 - 0.295);
+                }
+                if (mach < 1.2)
+                {
+                    double t = (mach - 1.0) / 0.2;
+                    return 0.60 - t * (0.60 - 0.50);
+                }
+                if (mach < 2.0)
+                {
+                    double t = (mach - 1.2) / 0.8;
+                    return 0.50 - t * (0.50 - 0.45);
+                }
+                if (mach < 3.5)
+                {
+                    double t = (mach - 2.0) / 1.5;
+                    return 0.45 - t * (0.45 - 0.40);
+                }
+                return 0.40;
+            });
+    }
+
+    Projectile Projectile::gsh30_round()
+    {
+        return Projectile(
+            0.390,
+            7.069e-4,
+            [](double mach)
+            {
+                if (mach < 0.8)
+                {
+                    return 0.280;
+                }
+                if (mach < 1.0)
+                {
+                    double t = (mach - 0.8) / 0.2;
+                    return 0.280 + t * (0.60 - 0.280);
+                }
+                if (mach < 1.2)
+                {
+                    double t = (mach - 1.0) / 0.2;
+                    return 0.60 - t * (0.60 - 0.50);
+                }
+                if (mach < 2.5)
+                {
+                    double t = (mach - 1.2) / 1.3;
+                    return 0.50 - t * (0.50 - 0.44);
+                }
+                if (mach < 3.0)
+                {
+                    double t = (mach - 2.5) / 0.5;
+                    return 0.44 - t * (0.44 - 0.42);
+                }
+                return 0.42;
+            });
+    }
+
     Projectile Projectile::with_mass(double value) const
     {
         return Projectile(
