@@ -2,15 +2,15 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/images/hero-light.png">
-  <img alt="ballistic-solve" src="docs/images/hero-light.png" width="100%">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/hero-dark.png">
+  <img alt="ballistic-solve" src="docs/images/hero-light.png" width="70%">
 </picture>
-
-*Real-time numerical solver for moving target interception with realistic ballistic trajectory*
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![C++](https://img.shields.io/badge/C++-20-00599C.svg)](https://isocpp.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+*Real-time numerical solver for moving target interception with realistic ballistic trajectory*
 
 </div>
 
