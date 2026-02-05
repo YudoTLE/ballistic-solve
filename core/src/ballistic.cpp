@@ -435,6 +435,21 @@ namespace ballistic_solve
         return Eigen::Vector2d(angles[0], angles[1]);
     }
 
+    Eigen::Vector3d Ballistic::find_best_direction(
+        const Eigen::Vector3d &target_position,
+        const Eigen::Vector3d &platform_position,
+        const Eigen::Vector3d &platform_velocity,
+        const double projectile_speed,
+        const double time) const
+    {
+        return to_direction(this->find_best_angles(
+            target_position,
+            platform_position,
+            platform_velocity,
+            projectile_speed,
+            time));
+    }
+
     double Ballistic::intercept_error(
         Ballistic::TargetPosition target_position,
         const Eigen::Vector3d &platform_position,

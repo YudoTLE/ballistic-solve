@@ -208,6 +208,26 @@ namespace ballistic_solve
             const Eigen::Vector3d &platform_velocity,
             double projectile_speed,
             double time) const;
+        
+        /**
+         * @brief Finds optimal launch direction to hit a stationary target at a specific time.
+         *
+         * Computes the direction that minimize the intercept error
+         * for reaching the target position at the specified time.
+         *
+         * @param target_position Position of the target in meters
+         * @param platform_position Initial position of the launching platform in meters
+         * @param platform_velocity Velocity of the launching platform in m/s
+         * @param projectile_speed Muzzle speed of the projectile relative to platform in m/s
+         * @param time Time at which intercept should occur in seconds
+         * @return Optimal launch direction
+         */
+        [[nodiscard]] Eigen::Vector3d find_best_direction(
+            const Eigen::Vector3d &target_position,
+            const Eigen::Vector3d &platform_position,
+            const Eigen::Vector3d &platform_velocity,
+            double projectile_speed,
+            double time) const;
 
     private:
         void system(const State &x, State &dxdt, double time) const;
