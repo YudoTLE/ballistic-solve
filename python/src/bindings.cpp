@@ -163,10 +163,12 @@ NB_MODULE(_core, m)
                                "All properties are immutable; modification methods return new instances.")
         .def(nb::init<>(),
              "Default constructor.\n\n"
-             "Creates a projectile with default values:\n"
-             "- mass: 1.0 kg\n"
-             "- area: 1.0 m²\n"
-             "- drag_coefficient: constant 0.47 (approximate value for a sphere)")
+             "Creates a projectile with all parameters set to zero:\n"
+             "- mass: 0.0 kg\n"
+             "- area: 0.0 m²\n"
+             "- drag_coefficient: 0.0 (constant)\n\n"
+             "Use builder methods (with_*) to configure desired parameters, or use\n"
+             "static factory methods for common projectile types.")
         .def(
             nb::init<double, double, bs::Projectile::DragCoefficient>(),
             nb::arg("mass"),
@@ -177,6 +179,38 @@ NB_MODULE(_core, m)
             "    mass: Mass of the projectile in kg (must be positive)\n"
             "    area: Cross-sectional area in m² (must be positive)\n"
             "    drag_coefficient: Function that returns drag coefficient for a given velocity")
+        .def_static("baseball_standard", &bs::Projectile::baseball_standard,
+                    "Creates a standard baseball projectile.\n\n"
+                    "Official baseball properties:\n"
+                    "- mass: 0.145 kg (145 grams, MLB regulation)\n"
+                    "- area: 0.00426 m² (diameter 73mm, radius 36.5mm)\n"
+                    "- drag_coefficient: 0.30 (typical for baseball with seams)\n\n"
+                    "Returns:\n"
+                    "    Projectile with standard baseball properties")
+        .def_static("soccer_ball_standard", &bs::Projectile::soccer_ball_standard,
+                    "Creates a standard soccer ball projectile.\n\n"
+                    "FIFA regulation soccer ball:\n"
+                    "- mass: 0.430 kg (430 grams, FIFA standard)\n"
+                    "- area: 0.0388 m² (diameter 22cm, radius 11cm)\n"
+                    "- drag_coefficient: 0.25 (smooth modern ball)\n\n"
+                    "Returns:\n"
+                    "    Projectile with standard soccer ball properties")
+        .def_static("basketball_standard", &bs::Projectile::basketball_standard,
+                    "Creates a standard basketball projectile.\n\n"
+                    "NBA regulation basketball:\n"
+                    "- mass: 0.624 kg (624 grams)\n"
+                    "- area: 0.0457 m² (diameter 24.1cm, radius 12.05cm)\n"
+                    "- drag_coefficient: 0.30 (textured surface)\n\n"
+                    "Returns:\n"
+                    "    Projectile with standard basketball properties")
+        .def_static("golf_ball_standard", &bs::Projectile::golf_ball_standard,
+                    "Creates a standard golf ball projectile.\n\n"
+                    "USGA regulation golf ball:\n"
+                    "- mass: 0.0459 kg (45.9 grams)\n"
+                    "- area: 0.00143 m² (diameter 42.7mm, radius 21.35mm)\n"
+                    "- drag_coefficient: 0.25 (dimpled surface reduces drag)\n\n"
+                    "Returns:\n"
+                    "    Projectile with standard golf ball properties")
         .def_ro("mass", &bs::Projectile::mass,
                 "Mass of the projectile in kilograms")
         .def_ro("area", &bs::Projectile::area,
@@ -215,10 +249,10 @@ NB_MODULE(_core, m)
             nb::overload_cast<bs::Projectile::DragCoefficient>(&bs::Projectile::with_drag_coefficient, nb::const_),
             nb::arg("function"),
             "Creates a new projectile with a custom drag coefficient function.\n\n"
-            "This allows for velocity-dependent drag coefficients, which is important\n"
+            "This allows for Mach-dependent drag coefficients, which is important\n"
             "for accurate modeling at transonic and supersonic velocities.\n\n"
             "Parameters:\n"
-            "    function: Function that computes drag coefficient from velocity\n\n"
+            "    function: Function that computes drag coefficient from Mach number\n\n"
             "Returns:\n"
             "    A new Projectile instance with the updated drag coefficient function");
 
