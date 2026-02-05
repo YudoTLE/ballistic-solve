@@ -14,8 +14,6 @@
 
 </div>
 
-## Overview
-
 **ballistic-solve** is a real-time C++ library with Python bindings for solving realistic ballistic trajectory problems. It computes optimal firing solutions to intercept stationary or moving targets while accounting for real-world physics including gravity, aerodynamic drag, wind effects, and atmospheric variations.
 
 ### Key Features
