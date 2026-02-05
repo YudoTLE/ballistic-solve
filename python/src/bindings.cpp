@@ -343,7 +343,45 @@ NB_MODULE(_core, m)
             "    time_range: Time interval (start, end) to search for solutions in seconds\n"
             "    time_scan_interval: Time step for scanning potential intercept times (default: 0.5 s)\n\n"
             "Returns:\n"
-            "    Optional Solution containing firing direction and intercept time, or None if no solution exists");
+            "    Optional Solution containing firing direction and intercept time, or None if no solution exists")
+        .def(
+            "find_best_angles",
+            &bs::Ballistic::find_best_angles,
+            nb::arg("target_position"),
+            nb::arg("platform_position"),
+            nb::arg("platform_velocity"),
+            nb::arg("projectile_speed"),
+            nb::arg("time"),
+            "Finds optimal launch angles to hit a stationary target at a specific time.\n\n"
+            "Computes the azimuth and elevation angles that minimize the intercept error\n"
+            "for reaching the target position at the specified time.\n\n"
+            "Parameters:\n"
+            "    target_position: Position of the target in meters\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    time: Time at which intercept should occur in seconds\n\n"
+            "Returns:\n"
+            "    Optimal launch angles [azimuth, elevation] in radians")
+        .def(
+            "find_best_direction",
+            &bs::Ballistic::find_best_direction,
+            nb::arg("target_position"),
+            nb::arg("platform_position"),
+            nb::arg("platform_velocity"),
+            nb::arg("projectile_speed"),
+            nb::arg("time"),
+            "Finds optimal launch direction to hit a stationary target at a specific time.\n\n"
+            "Computes the direction that minimizes the intercept error\n"
+            "for reaching the target position at the specified time.\n\n"
+            "Parameters:\n"
+            "    target_position: Position of the target in meters\n"
+            "    platform_position: Initial position of the launching platform in meters\n"
+            "    platform_velocity: Velocity of the launching platform in m/s\n"
+            "    projectile_speed: Muzzle speed of the projectile relative to platform in m/s\n"
+            "    time: Time at which intercept should occur in seconds\n\n"
+            "Returns:\n"
+            "    Optimal launch direction as a unit vector");
 
     m.def(
         "to_direction",
