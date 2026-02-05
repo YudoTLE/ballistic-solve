@@ -280,7 +280,11 @@ NB_MODULE(_core, m)
         .def_ro("direction", &bs::Ballistic::Solution::direction,
                 "Unit direction vector to aim the projectile")
         .def_ro("time", &bs::Ballistic::Solution::time,
-                "Time of intercept in seconds");
+                "Time of intercept in seconds")
+        .def_ro("error", &bs::Ballistic::Solution::error,
+                "Intercept error in meters")
+        .def_ro("computation_time", &bs::Ballistic::Solution::computation_time,
+                "Computation time in seconds");
 
     nb::class_<bs::Ballistic>(m, "Ballistic",
                               "Ballistic trajectory solver for projectile motion with environmental effects.\n\n"

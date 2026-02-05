@@ -20,6 +20,7 @@
 - **Real-world physics** — Account for gravity, air resistance, wind, and atmospheric conditions
 - **Moving targets interception** — Calculate firing solutions to intercept targets with any motion pattern
 - **High performance** — Fast C++ core with Eigen for real-time trajectory computation
+
 ---
 
 ## Installation
@@ -59,6 +60,8 @@ solution = ballistic.solve_earliest(
 if solution:
     print(f"Fire direction: {solution.direction}")
     print(f"Time to intercept: {solution.time:.3f}s")
+    print(f"Interception error: {solution.error:.4e}m")
+    print(f"Computation time: {solution.computation_time * 1e3:.2f}ms")
 else:
     print("No solution")
 ```

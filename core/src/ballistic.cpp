@@ -6,6 +6,7 @@
 #include <boost/numeric/odeint.hpp>
 #include <boost/math/tools/minima.hpp>
 #include <boost/math/tools/roots.hpp>
+#include <chrono>
 
 namespace ballistic_solve
 {
@@ -161,20 +162,39 @@ namespace ballistic_solve
         const std::pair<double, double> time_range,
         const double time_scan_interval) const
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         auto objective = [&](const double time)
         {
             return this->intercept_error(target_position, platform_position, platform_velocity, projectile_speed, time);
         };
         auto solution = [&](const double time)
         {
+            Eigen::Vector3d target_position_at_interception = target_position(time);
+
+            Eigen::Vector3d direction = to_direction(this->find_best_angles(
+                target_position_at_interception,
+                platform_position,
+                platform_velocity,
+                projectile_speed,
+                time));
+            double error = (target_position_at_interception - this->simulate(
+                                                                  platform_position,
+                                                                  platform_velocity,
+                                                                  projectile_speed,
+                                                                  direction,
+                                                                  true,
+                                                                  time))
+                               .norm();
+            double computation_time = std::chrono::duration<double>(
+                                          std::chrono::high_resolution_clock::now() - start)
+                                          .count();
+
             return Solution{
-                .direction = to_direction(this->find_best_angles(
-                    target_position(time),
-                    platform_position,
-                    platform_velocity,
-                    projectile_speed,
-                    time)),
-                .time = time};
+                .direction = direction,
+                .time = time,
+                .error = error,
+                .computation_time = computation_time};
         };
 
         std::optional<double> overshoot_time, undershoot_time;
@@ -248,20 +268,38 @@ namespace ballistic_solve
         const std::pair<double, double> time_range,
         const double time_scan_interval) const
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         auto objective = [&](const double time)
         {
             return this->intercept_error(target_position, platform_position, platform_velocity, projectile_speed, time);
         };
         auto solution = [&](const double time)
         {
+            Eigen::Vector3d target_position_at_interception = target_position(time);
+
+            Eigen::Vector3d direction = to_direction(this->find_best_angles(
+                target_position_at_interception,
+                platform_position,
+                platform_velocity,
+                projectile_speed,
+                time));
+            double error = (target_position_at_interception - this->simulate(
+                                                                  platform_position,
+                                                                  platform_velocity,
+                                                                  projectile_speed,
+                                                                  direction,
+                                                                  true,
+                                                                  time))
+                               .norm();
+            double computation_time = std::chrono::duration<double>(
+                                          std::chrono::high_resolution_clock::now() - start)
+                                          .count();
             return Solution{
-                .direction = to_direction(this->find_best_angles(
-                    target_position(time),
-                    platform_position,
-                    platform_velocity,
-                    projectile_speed,
-                    time)),
-                .time = time};
+                .direction = direction,
+                .time = time,
+                .error = error,
+                .computation_time = computation_time};
         };
 
         std::optional<double> overshoot_time, undershoot_time;

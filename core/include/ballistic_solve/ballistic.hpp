@@ -56,6 +56,12 @@ namespace ballistic_solve
 
             /** @brief Time of intercept in seconds */
             const double time;
+
+            /** @brief Intercept error in meters */
+            const double error;
+
+            /** @brief Computation time in seconds */
+            const double computation_time;
         };
 
     public:
