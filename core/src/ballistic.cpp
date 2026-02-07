@@ -461,8 +461,7 @@ namespace ballistic_solve
         const double projectile_speed,
         const double time) const
     {
-        Eigen::VectorXd angles(2);
-        angles << 0.0, 0.0;
+        Eigen::VectorXd angles = to_angles(target_position - platform_position);
 
         AngleFunctor functor(this, target_position, platform_position,
                              platform_velocity, projectile_speed, time);
