@@ -12,8 +12,9 @@ namespace ballistic_solve
 
     Eigen::Vector2d to_angles(const Eigen::Vector3d &direction)
     {
+        Eigen::Vector3d normalized_direction = direction.normalized();
         return Eigen::Vector2d(
-            std::atan2(direction.y(), direction.x()),
-            std::asin(direction.z()));
+            std::atan2(normalized_direction.y(), normalized_direction.x()),
+            std::asin(normalized_direction.z()));
     }
 }
