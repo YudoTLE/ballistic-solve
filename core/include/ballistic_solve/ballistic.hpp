@@ -3,7 +3,7 @@
 
 #include "./environment.hpp"
 #include "./projectile.hpp"
-#include <Eigen/dense>
+#include <Eigen/Dense>
 #include <optional>
 #include <functional>
 #include <vector>
