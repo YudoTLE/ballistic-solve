@@ -152,6 +152,23 @@ namespace ballistic_solve
             double time) const;
 
         /**
+         * @brief Simulates projectile position at a specific time with the best possible angles.
+         *
+         * @param platform_position Initial position of the launching platform in meters
+         * @param platform_velocity Velocity of the launching platform in m/s
+         * @param projectile_speed Muzzle speed of the projectile relative to platform in m/s
+         * @param angles Launch angles [azimuth, elevation] in radians
+         * @param time Time at which to compute position in seconds
+         * @return Pair of projectile position at the specified time in meters and optimal direction
+         */
+        [[nodiscard]] std::pair<Eigen::Vector3d, Eigen::Vector3d> simulate_best(
+            const Eigen::Vector3d &target_position,
+            const Eigen::Vector3d &platform_position,
+            const Eigen::Vector3d &platform_velocity,
+            double projectile_speed,
+            double time) const;
+
+        /**
          * @brief Finds the earliest firing solution to intercept a moving target.
          *
          * Searches for the earliest time within the specified range where the projectile
@@ -252,13 +269,6 @@ namespace ballistic_solve
             double projectile_speed,
             const Eigen::Vector3d &direction,
             bool is_normalized_direction,
-            double time) const;
-
-        [[nodiscard]] double intercept_error(
-            Ballistic::TargetPosition target_position,
-            const Eigen::Vector3d &platform_position,
-            const Eigen::Vector3d &platform_velocity,
-            double projectile_speed,
             double time) const;
     };
 }

@@ -154,6 +154,30 @@ namespace ballistic_solve
             time);
     }
 
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> Ballistic::simulate_best(
+        const Eigen::Vector3d &target_position,
+        const Eigen::Vector3d &platform_position,
+        const Eigen::Vector3d &platform_velocity,
+        const double projectile_speed,
+        const double time) const
+    {
+        Eigen::Vector3d direction = this->find_best_direction(
+            target_position,
+            platform_position,
+            platform_velocity,
+            projectile_speed,
+            time);
+
+        return {this->simulate(
+                    platform_position,
+                    platform_velocity,
+                    projectile_speed,
+                    direction,
+                    true,
+                    time),
+                direction};
+    }
+
     std::optional<Ballistic::Solution> Ballistic::solve_earliest(
         Ballistic::TargetPosition target_position,
         const Eigen::Vector3d &platform_position,
@@ -164,28 +188,81 @@ namespace ballistic_solve
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        auto objective = [&](const double time)
+        auto objective = [&](double time)
         {
-            return this->intercept_error(target_position, platform_position, platform_velocity, projectile_speed, time);
-        };
-        auto solution = [&](const double time)
-        {
-            Eigen::Vector3d target_position_at_interception = target_position(time);
+            Eigen::Vector3d txy = target_position(time);
 
-            Eigen::Vector3d direction = to_direction(this->find_best_angles(
-                target_position_at_interception,
+            auto [computed_point, _] = this->simulate_best(
+                txy, platform_position, platform_velocity, projectile_speed, time);
+
+            return (txy - platform_position).dot(computed_point - txy);
+        };
+        auto solution = [&](double a, double b, double fa, double fb) -> std::optional<Solution>
+        {
+            std::uintmax_t max_iter = constants::root_finding::max_iterations;
+
+            auto [p, q] = boost::math::tools::toms748_solve(
+                objective,
+                a,
+                b,
+                fa,
+                fb,
+                constants::root_finding::tolerance,
+                max_iter);
+
+            double time = p;
+            if (p != q)
+            {
+                Eigen::Vector3d tp = target_position(p);
+                Eigen::Vector3d tq = target_position(q);
+
+                Eigen::Vector3d pp = this->simulate_best(
+                                             tp,
+                                             platform_position,
+                                             platform_velocity,
+                                             projectile_speed,
+                                             p)
+                                         .first;
+                Eigen::Vector3d pq = this->simulate_best(
+                                             tq,
+                                             platform_position,
+                                             platform_velocity,
+                                             projectile_speed,
+                                             q)
+                                         .first;
+
+                if (std::min((tp - pp).norm(), (tq - pq).norm()) > 1e-6) // TODO: USE CONSTANT
+                {
+                    return std::nullopt;
+                }
+
+                max_iter = constants::root_finding::max_iterations - max_iter;
+
+                auto [x, y] = boost::math::tools::toms748_solve(
+                    objective,
+                    p,
+                    q,
+                    (tp - platform_position).dot(pp - tp),
+                    (tq - platform_position).dot(pq - tq),
+                    constants::root_finding::tolerance,
+                    max_iter);
+
+                time = (x + y) * 0.5;
+            }
+
+            Eigen::Vector3d txy = target_position(time);
+
+            auto [computed_point, direction] = this->simulate_best(
+                txy,
                 platform_position,
                 platform_velocity,
                 projectile_speed,
-                time));
-            double error = (target_position_at_interception - this->simulate(
-                                                                  platform_position,
-                                                                  platform_velocity,
-                                                                  projectile_speed,
-                                                                  direction,
-                                                                  true,
-                                                                  time))
-                               .norm();
+                time);
+            double error = (txy - computed_point).norm();
+            if (error > 1e-9) // TODO: USE CONSTANT
+            {
+                return std::nullopt;
+            }
             double computation_time = std::chrono::duration<double>(
                                           std::chrono::high_resolution_clock::now() - start)
                                           .count();
@@ -206,45 +283,41 @@ namespace ballistic_solve
         {
             double current_error = objective(current_time);
 
-            if (current_error == 0)
-            {
-                return solution(current_time);
-            }
-            if (current_error > 0)
+            if (current_error >= 0)
             {
                 if (undershoot_time.has_value())
                 {
-                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
-                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
-                        objective,
+                    std::optional<Solution> s = solution(
                         undershoot_time.value(),
                         current_time,
                         undershoot_error,
-                        current_error,
-                        constants::root_finding::tolerance,
-                        max_iterations);
+                        current_error);
+                    if (s.has_value())
+                    {
+                        return s;
+                    }
 
-                    return solution((near_root_lo + near_root_hi) * 0.5);
+                    undershoot_time = std::nullopt;
                 }
 
                 overshoot_time = current_time;
                 overshoot_error = current_error;
             }
-            if (current_error < 0)
+            else
             {
                 if (overshoot_time.has_value())
                 {
-                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
-                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
-                        objective,
+                    std::optional<Solution> s = solution(
                         overshoot_time.value(),
                         current_time,
                         overshoot_error,
-                        current_error,
-                        constants::root_finding::tolerance,
-                        max_iterations);
+                        current_error);
+                    if (s.has_value())
+                    {
+                        return s;
+                    }
 
-                    return solution((near_root_lo + near_root_hi) * 0.5);
+                    overshoot_time = std::nullopt;
                 }
 
                 undershoot_time = current_time;
@@ -270,31 +343,85 @@ namespace ballistic_solve
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        auto objective = [&](const double time)
+        auto objective = [&](double time)
         {
-            return this->intercept_error(target_position, platform_position, platform_velocity, projectile_speed, time);
-        };
-        auto solution = [&](const double time)
-        {
-            Eigen::Vector3d target_position_at_interception = target_position(time);
+            Eigen::Vector3d txy = target_position(time);
 
-            Eigen::Vector3d direction = to_direction(this->find_best_angles(
-                target_position_at_interception,
+            auto [computed_point, _] = this->simulate_best(
+                txy, platform_position, platform_velocity, projectile_speed, time);
+
+            return (txy - platform_position).dot(computed_point - txy);
+        };
+        auto solution = [&](double a, double b, double fa, double fb) -> std::optional<Solution>
+        {
+            std::uintmax_t max_iter = constants::root_finding::max_iterations;
+
+            auto [p, q] = boost::math::tools::toms748_solve(
+                objective,
+                a,
+                b,
+                fa,
+                fb,
+                constants::root_finding::tolerance,
+                max_iter);
+
+            double time = p;
+            if (p != q)
+            {
+                Eigen::Vector3d tp = target_position(p);
+                Eigen::Vector3d tq = target_position(q);
+
+                Eigen::Vector3d pp = this->simulate_best(
+                                             tp,
+                                             platform_position,
+                                             platform_velocity,
+                                             projectile_speed,
+                                             p)
+                                         .first;
+                Eigen::Vector3d pq = this->simulate_best(
+                                             tq,
+                                             platform_position,
+                                             platform_velocity,
+                                             projectile_speed,
+                                             q)
+                                         .first;
+
+                if (std::min((tp - pp).norm(), (tq - pq).norm()) > 1e-6) // TODO: USE CONSTANT
+                {
+                    return std::nullopt;
+                }
+
+                max_iter = constants::root_finding::max_iterations - max_iter;
+
+                auto [x, y] = boost::math::tools::toms748_solve(
+                    objective,
+                    p,
+                    q,
+                    (tp - platform_position).dot(pp - tp),
+                    (tq - platform_position).dot(pq - tq),
+                    constants::root_finding::tolerance,
+                    max_iter);
+
+                time = (x + y) * 0.5;
+            }
+
+            Eigen::Vector3d txy = target_position(time);
+
+            auto [computed_point, direction] = this->simulate_best(
+                txy,
                 platform_position,
                 platform_velocity,
                 projectile_speed,
-                time));
-            double error = (target_position_at_interception - this->simulate(
-                                                                  platform_position,
-                                                                  platform_velocity,
-                                                                  projectile_speed,
-                                                                  direction,
-                                                                  true,
-                                                                  time))
-                               .norm();
+                time);
+            double error = (txy - computed_point).norm();
+            if (error > 1e-9) // TODO: USE CONSTANT
+            {
+                return std::nullopt;
+            }
             double computation_time = std::chrono::duration<double>(
                                           std::chrono::high_resolution_clock::now() - start)
                                           .count();
+
             return Solution{
                 .direction = direction,
                 .time = time,
@@ -311,45 +438,41 @@ namespace ballistic_solve
         {
             double current_error = objective(current_time);
 
-            if (current_error == 0)
-            {
-                return solution(current_time);
-            }
-            if (current_error > 0)
+            if (current_error >= 0)
             {
                 if (undershoot_time.has_value())
                 {
-                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
-                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
-                        objective,
+                    std::optional<Solution> s = solution(
                         current_time,
                         undershoot_time.value(),
                         current_error,
-                        undershoot_error,
-                        constants::root_finding::tolerance,
-                        max_iterations);
+                        undershoot_error);
+                    if (s.has_value())
+                    {
+                        return s;
+                    }
 
-                    return solution((near_root_lo + near_root_hi) * 0.5);
+                    undershoot_time = std::nullopt;
                 }
 
                 overshoot_time = current_time;
                 overshoot_error = current_error;
             }
-            if (current_error < 0)
+            else
             {
                 if (overshoot_time.has_value())
                 {
-                    std::uintmax_t max_iterations = constants::root_finding::max_iterations;
-                    auto [near_root_lo, near_root_hi] = boost::math::tools::toms748_solve(
-                        objective,
+                    std::optional<Solution> s = solution(
                         current_time,
                         overshoot_time.value(),
                         current_error,
-                        overshoot_error,
-                        constants::root_finding::tolerance,
-                        max_iterations);
+                        overshoot_error);
+                    if (s.has_value())
+                    {
+                        return s;
+                    }
 
-                    return solution((near_root_lo + near_root_hi) * 0.5);
+                    overshoot_time = std::nullopt;
                 }
 
                 undershoot_time = current_time;
@@ -467,6 +590,7 @@ namespace ballistic_solve
                              platform_velocity, projectile_speed, time);
         Eigen::LevenbergMarquardt<AngleFunctor> lm(functor);
 
+        lm.setMaxfev(constants::angle_finding::max_iterations);
         lm.minimize(angles);
 
         return Eigen::Vector2d(angles[0], angles[1]);
@@ -485,32 +609,5 @@ namespace ballistic_solve
             platform_velocity,
             projectile_speed,
             time));
-    }
-
-    double Ballistic::intercept_error(
-        Ballistic::TargetPosition target_position,
-        const Eigen::Vector3d &platform_position,
-        const Eigen::Vector3d &platform_velocity,
-        const double projectile_speed,
-        const double time) const
-    {
-        Eigen::Vector3d current_target_position = target_position(time);
-
-        Eigen::Vector2d angles = this->find_best_angles(
-            current_target_position,
-            platform_position,
-            platform_velocity,
-            projectile_speed,
-            time);
-
-        Eigen::Vector3d computed_point = this->simulate(
-            platform_position,
-            platform_velocity,
-            projectile_speed,
-            angles,
-            time);
-
-        // positive = overshoot, negative = undershoot
-        return (current_target_position - platform_position).dot(computed_point - current_target_position);
     }
 }

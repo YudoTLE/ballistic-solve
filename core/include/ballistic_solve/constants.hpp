@@ -11,6 +11,10 @@ namespace ballistic_solve
         inline constexpr int digits = std::numeric_limits<double>::digits;
         inline constexpr double h = 1e-6;
 
+        namespace angle_finding {
+            inline constexpr std::uintmax_t max_iterations = 25;
+        }
+
         namespace root_finding {
             inline const boost::math::tools::eps_tolerance<double> tolerance(digits);
             inline constexpr std::uintmax_t max_iterations = 40;
