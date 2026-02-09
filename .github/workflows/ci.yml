@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
@@ -37,14 +37,6 @@ jobs:
         run: |
           brew install boost eigen
 
-      # Install Boost and Eigen on Windows
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          vcpkg install boost-math:x64-windows boost-numeric-conversion:x64-windows eigen3:x64-windows
-          vcpkg integrate install
-        shell: bash
-
       # Install Python dependencies
       - name: Install Python build dependencies
         run: |
@@ -55,15 +47,10 @@ jobs:
         run: pip install pytest numpy
 
       # Build the package
-      - name: Build and install package (Windows)
-        if: runner.os == 'Windows'
+      - name: Build and install package
         run: pip install -v .
         env:
-          CMAKE_ARGS: "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-
-      - name: Build and install package (Unix)
-        if: runner.os != 'Windows'
-        run: pip install -v .
+          CMAKE_ARGS: ${{ runner.os == 'Windows' && '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
 
       - name: Test import
         run: python -c "from ballistic_solve import Ballistic, Environment, Projectile; print('✓ Import successful')"
