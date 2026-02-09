@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from ballistic_solve import Ballistic, Environment, Projectile
-from test_utils import generate_test_case
+from .test_utils import generate_test_case
 
 
 @pytest.fixture
