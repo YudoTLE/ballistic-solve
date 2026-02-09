@@ -6,6 +6,7 @@
      <img alt="ballistic-solve" src="docs/images/hero-light.png" width="70%">
    </picture>
    
+   [![CI](https://github.com/YudoTLE/ballistic-solve/actions/workflows/ci.yml/badge.svg)](https://github.com/YudoTLE/ballistic-solve/actions/workflows/ci.yml)
    [![PyPI](https://img.shields.io/pypi/v/ballistic-solve.svg)](https://pypi.org/project/ballistic-solve/)
    [![Python 3.9+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
    [![C++](https://img.shields.io/badge/C++-20-00599C.svg)](https://isocpp.org/)
