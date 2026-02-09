@@ -7,7 +7,7 @@
    </picture>
    
    [![PyPI](https://img.shields.io/pypi/v/ballistic-solve.svg)](https://pypi.org/project/ballistic-solve/)
-   [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+   [![Python 3.9+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
    [![C++](https://img.shields.io/badge/C++-20-00599C.svg)](https://isocpp.org/)
    [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
    

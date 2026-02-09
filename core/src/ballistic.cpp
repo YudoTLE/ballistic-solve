@@ -56,8 +56,8 @@ namespace ballistic_solve
             observer);
 
         return Trajectory{
-            .positions = trajectory_positions,
-            .times = trajectory_times};
+            trajectory_positions,
+            trajectory_times};
     }
 
     Ballistic::Trajectory Ballistic::simulate(
@@ -268,10 +268,10 @@ namespace ballistic_solve
                                           .count();
 
             return Solution{
-                .direction = direction,
-                .time = time,
-                .error = error,
-                .computation_time = computation_time};
+                direction,
+                time,
+                error,
+                computation_time};
         };
 
         std::optional<double> overshoot_time, undershoot_time;
@@ -423,10 +423,10 @@ namespace ballistic_solve
                                           .count();
 
             return Solution{
-                .direction = direction,
-                .time = time,
-                .error = error,
-                .computation_time = computation_time};
+                direction,
+                time,
+                error,
+                computation_time};
         };
 
         std::optional<double> overshoot_time, undershoot_time;

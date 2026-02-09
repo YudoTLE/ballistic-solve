@@ -39,7 +39,7 @@ target_link_libraries(ballistic_solve_core
         Eigen3::Eigen
 )
 
-target_compile_features(ballistic_solve_core PUBLIC cxx_std_20)
+target_compile_features(ballistic_solve_core PUBLIC cxx_std_17)
 
 set_target_properties(ballistic_solve_core PROPERTIES 
     POSITION_INDEPENDENT_CODE ON
