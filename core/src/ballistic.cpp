@@ -557,20 +557,19 @@ namespace ballistic_solve
 
         int df(const InputType &angles, JacobianType &fjac) const
         {
-            Eigen::VectorXd fvec_plus(3), fvec_minus(3);
-            Eigen::VectorXd angles_h = angles;
+            Eigen::VectorXd fvec(3), fvec_preturb(3);
+            Eigen::VectorXd angles_preturb = angles;
+
+            (*this)(angles, fvec);
 
             for (int i = 0; i < 2; i++)
             {
-                angles_h(i) += constants::h;
-                (*this)(angles_h, fvec_plus);
+                angles_preturb(i) += constants::h;
+                (*this)(angles_preturb, fvec_preturb);
 
-                angles_h(i) -= 2 * constants::h;
-                (*this)(angles_h, fvec_minus);
+                angles_preturb(i) = angles(i);
 
-                angles_h(i) = angles(i);
-
-                fjac.col(i) = (fvec_plus - fvec_minus) / (2 * constants::h);
+                fjac.col(i) = (fvec_preturb - fvec) / constants::h;
             }
 
             return 0;
