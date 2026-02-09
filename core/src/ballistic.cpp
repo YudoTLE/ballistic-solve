@@ -199,7 +199,7 @@ namespace ballistic_solve
         };
         auto solution = [&](double a, double b, double fa, double fb) -> std::optional<Solution>
         {
-            std::uintmax_t max_iter = constants::root_finding::max_iterations;
+            std::uintmax_t max_iter = constants::root_finding::max_iterations / 2;
 
             auto [p, q] = boost::math::tools::toms748_solve(
                 objective,
@@ -231,7 +231,7 @@ namespace ballistic_solve
                                              q)
                                          .first;
 
-                if (std::min((tp - pp).norm(), (tq - pq).norm()) > 1e-6) // TODO: USE CONSTANT
+                if (std::min((tp - pp).norm(), (tq - pq).norm()) > 1e-3) // TODO: USE CONSTANT
                 {
                     return std::nullopt;
                 }
