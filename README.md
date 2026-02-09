@@ -1,11 +1,9 @@
 <div align="center">
 
    <picture>
-     <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-     <source media="(prefers-color-scheme: light)" srcset="docs/images/hero-dark.png">
-     <img alt="ballistic-solve" src="docs/images/hero-light.png" width="70%">
+      <img width="70%" alt="hero-dark" src="https://github.com/user-attachments/assets/8b5e3dde-6867-4ebf-94ec-531fbf97b08f" />
    </picture>
-   
+
    [![CI](https://github.com/YudoTLE/ballistic-solve/actions/workflows/ci.yml/badge.svg)](https://github.com/YudoTLE/ballistic-solve/actions/workflows/ci.yml)
    [![PyPI](https://img.shields.io/pypi/v/ballistic-solve.svg)](https://pypi.org/project/ballistic-solve/)
    [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
