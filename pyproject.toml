@@ -7,7 +7,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ballistic-solve"
-version = "0.2.0"
+version = "0.2.1"
 requires-python = ">=3.9"
 dependencies = [
     "numpy"
