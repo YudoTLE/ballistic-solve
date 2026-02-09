@@ -31,18 +31,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev libeigen3-dev
 
-      # Install Boost and Eigen on Windows
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          vcpkg install boost-math:x64-windows eigen3:x64-windows
-        shell: bash
-
       # Install Boost and Eigen on macOS
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install boost eigen
+
+      # Install Boost and Eigen on Windows
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install boost-math:x64-windows boost-numeric-conversion:x64-windows eigen3:x64-windows
+          vcpkg integrate install
+        shell: bash
 
       # Install Python dependencies
       - name: Install Python build dependencies
@@ -54,10 +55,15 @@ jobs:
         run: pip install pytest numpy
 
       # Build the package
-      - name: Build and install package
+      - name: Build and install package (Windows)
+        if: runner.os == 'Windows'
         run: pip install -v .
         env:
-          CMAKE_ARGS: ${{ runner.os == 'Windows' && '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
+          CMAKE_ARGS: "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build and install package (Unix)
+        if: runner.os != 'Windows'
+        run: pip install -v .
 
       - name: Test import
         run: python -c "from ballistic_solve import Ballistic, Environment, Projectile; print('✓ Import successful')"
